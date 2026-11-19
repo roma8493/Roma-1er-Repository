@@ -105,7 +105,7 @@
 ### Reglas de diseño
 - Uso con una mano, botones grandes, a lo sumo 2 toques para registrar el día.
 - Textos según R-07. Tema claro y simple con colores propios (sin copiar HabitKit/HabitBull).
-- Nombre, hora y clave ancla no se editan después de la bienvenida en la 0.1 (ajustes → 0.2).
+- Nombre, hora y clave ancla no se editan después de la bienvenida en la 0.1 (ajustes → 0.2, T11).
 
 ## Etapa 3 — Tecnología (aprobada 2026-11-19)
 - Lenguaje/UI: Kotlin + Jetpack Compose (Material 3), una sola Activity. Proyecto Gradle (Kotlin DSL).
@@ -141,3 +141,4 @@
 
 ### Tareas 0.2
 - [x] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.
+- [ ] T11: Ajustes (editar nombre, hora de salida, clave ancla y "por qué"; botón "Ajustes" en Hoy). No toca registros ni fase. Verifica en el celular: cambiar nombre y ancla, ver el cambio en Hoy y Detalle, persiste al reabrir.

@@ -20,6 +20,7 @@ import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Habito
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.TipoHabito
+import com.romtracker.app.ui.Ajustes
 import com.romtracker.app.ui.Bienvenida
 import com.romtracker.app.ui.Detalle
 import com.romtracker.app.ui.Hoy
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 private const val PANTALLA_COPIA = "COPIA"
+private const val PANTALLA_AJUSTES = "AJUSTES"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +64,18 @@ class MainActivity : ComponentActivity() {
                                 perfil = nuevo
                             }
                         }
-                        abierto == null -> Hoy(db, perfil!!, { abierto = it }, { abierto = PANTALLA_COPIA })
+                        abierto == null -> Hoy(db, perfil!!, { abierto = it }, { abierto = PANTALLA_COPIA }, { abierto = PANTALLA_AJUSTES })
+                        abierto == PANTALLA_AJUSTES -> Ajustes(
+                            perfil!!,
+                            alVolver = { abierto = null },
+                            alGuardar = { nuevo ->
+                                scope.launch {
+                                    db.perfilDao().guardar(nuevo)
+                                    perfil = nuevo
+                                    abierto = null
+                                }
+                            },
+                        )
                         abierto == PANTALLA_COPIA -> PantallaCopia(
                             db,
                             alVolver = { abierto = null },

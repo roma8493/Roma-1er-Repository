@@ -52,7 +52,7 @@ private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
  * y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
-fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia: () -> Unit) {
+fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia: () -> Unit, alAbrirAjustes: () -> Unit) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
 
@@ -112,6 +112,9 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.weight(1f),
             )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = alAbrirAjustes) { Text("Ajustes") }
             TextButton(onClick = alAbrirCopia) { Text("Copia") }
         }
 
