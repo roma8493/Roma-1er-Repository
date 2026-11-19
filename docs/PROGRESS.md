@@ -6,12 +6,12 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.1.0-T7 (versionCode 4; Bienvenida + pantalla Hoy con gym, comida y checklist).
-- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4–T6 hechas; T7 implementada, falta probar en el A34.
+- **Versión actual**: 0.1.0-T8 (versionCode 5; Bienvenida + Hoy + Detalle con calendario).
+- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4–T7 hechas; T8 implementada, falta probar en el A34.
 
 ## Última Actualización
 - **Fecha**: 2026-11-19
-- **Resumen**: T7 implementada (`ui/Hoy.kt`): tarjetas Gym/Comida con fase y barra, botones que registran en 1 toque y corrigen, checklist "para mañana" y "lo que preparaste anoche"; tocar tarjeta → Detalle queda para T8. T6 confirmada en el A34 (persiste tras reiniciar). Antes, T6 hecha: Bienvenida (nombre+hora de salida, clave ancla, por qué) en `ui/Bienvenida.kt`; al pulsar Empezar guarda Perfil y crea el hábito GYM (inicio = hoy) en Room; sin perfil la app siempre vuelve al paso 1. Pendiente confirmar Action y probar en el A34. Antes, T5 hecha: capa Room (Perfil, Habito, Registro, Checklist + DAOs) en `data/` y lógica pura de fase/consistencia/racha en `logic/`, con 13 tests. Action en verde (run 44446995312, commit 6655abc). T4 confirmada en el A34 (instala y abre).
+- **Resumen**: T8 implementada (`ui/Detalle.kt`): fase, barra, consistencia, racha, calendario mensual (editables hoy y 7 días atrás, no antes del inicio del hábito; menú Fui/No fui/Sin dato) y clave ancla/por qué en Gym; tarjetas de Hoy abren el Detalle; `esEditable` con tests. T7 confirmada en el A34. Antes, T7 implementada (`ui/Hoy.kt`): tarjetas Gym/Comida con fase y barra, botones que registran en 1 toque y corrigen, checklist "para mañana" y "lo que preparaste anoche"; tocar tarjeta → Detalle queda para T8. T6 confirmada en el A34 (persiste tras reiniciar). Antes, T6 hecha: Bienvenida (nombre+hora de salida, clave ancla, por qué) en `ui/Bienvenida.kt`; al pulsar Empezar guarda Perfil y crea el hábito GYM (inicio = hoy) en Room; sin perfil la app siempre vuelve al paso 1. Pendiente confirmar Action y probar en el A34. Antes, T5 hecha: capa Room (Perfil, Habito, Registro, Checklist + DAOs) en `data/` y lógica pura de fase/consistencia/racha en `logic/`, con 13 tests. Action en verde (run 44446995312, commit 6655abc). T4 confirmada en el A34 (instala y abre).
 
 ## Funcionalidades
 - **Implementadas (sin UI aún)**: base de datos local y lógica de fase/consistencia/racha.
@@ -54,7 +54,7 @@
 - [x] Fase 3 / Etapa 1: MVP 0.1 en `docs/SPEC.md` (aprobado 2026-11-19).
 - [x] Fase 3 / Etapa 2: diseño y prototipo (pantallas y flujo de R-01 a R-06).
 - [x] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
-- [ ] Fase 4: tareas T7–T9 (T4–T6 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
+- [ ] Fase 4: tareas T8–T9 (T4–T7 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Esperar Action en verde, instalar APK 0.1.0-T7 en el A34 y probar Hoy; luego marcar T7, `/clear` y T8 (Detalle).
+- Esperar Action en verde, instalar APK 0.1.0-T8 en el A34 y probar Detalle; luego marcar T8, `/clear` y T9 (revisión de textos, APK final, README).

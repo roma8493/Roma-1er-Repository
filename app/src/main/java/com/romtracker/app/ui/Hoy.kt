@@ -49,7 +49,7 @@ private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
  * y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
-fun Hoy(db: AppDatabase, perfil: Perfil) {
+fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
 
@@ -112,6 +112,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil) {
             textoNo = "Hoy no",
             mensajeNo = "Mañana es otra oportunidad.",
             mensajeSi = "¡Qué bueno que fuiste!",
+            alAbrir = { alAbrir(TipoHabito.GYM) },
             alElegir = { registrar(TipoHabito.GYM, it) },
         )
 
@@ -123,6 +124,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil) {
             textoNo = "Chatarra",
             mensajeNo = "Un desliz no borra lo que venís haciendo.",
             mensajeSi = "Bien ahí, sigamos así.",
+            alAbrir = { alAbrir(TipoHabito.COMIDA) },
             alElegir = { registrar(TipoHabito.COMIDA, it) },
         )
 
@@ -164,9 +166,11 @@ private fun TarjetaHabito(
     textoNo: String,
     mensajeSi: String,
     mensajeNo: String,
+    alAbrir: () -> Unit,
     alElegir: (Boolean) -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
+    Card(onClick = alAbrir, enabled = estado != null, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (estado == null) {
                 // Solo la comida puede no existir todavía: empieza con el primer registro.

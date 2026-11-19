@@ -28,3 +28,11 @@ fun rachaActual(inicio: LocalDate, hoy: LocalDate, registros: Registros): Int {
     }
     return racha
 }
+
+const val DIAS_EDITABLES_ATRAS = 7
+
+/** Editable: hoy y los 7 días anteriores, nunca futuros ni anteriores al inicio del hábito. */
+fun esEditable(fecha: LocalDate, inicio: LocalDate, hoy: LocalDate): Boolean =
+    !fecha.isAfter(hoy) &&
+        !fecha.isBefore(hoy.minusDays(DIAS_EDITABLES_ATRAS.toLong())) &&
+        !fecha.isBefore(inicio)

@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.romtracker.app.data.AppDatabase
@@ -20,6 +21,7 @@ import com.romtracker.app.data.Habito
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.ui.Bienvenida
+import com.romtracker.app.ui.Detalle
 import com.romtracker.app.ui.Hoy
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -35,6 +37,8 @@ class MainActivity : ComponentActivity() {
                     var cargando by remember { mutableStateOf(true) }
                     var perfil by remember { mutableStateOf<Perfil?>(null) }
                     val scope = rememberCoroutineScope()
+                    // null = pantalla Hoy; si no, el tipo de hábito cuyo Detalle se ve
+                    var abierto by rememberSaveable { mutableStateOf<String?>(null) }
 
                     LaunchedEffect(Unit) {
                         perfil = db.perfilDao().obtener()
@@ -55,7 +59,8 @@ class MainActivity : ComponentActivity() {
                                 perfil = nuevo
                             }
                         }
-                        else -> Hoy(db, perfil!!)
+                        abierto == null -> Hoy(db, perfil!!) { abierto = it }
+                        else -> Detalle(db, perfil!!, abierto!!) { abierto = null }
                     }
                     }
                 }
