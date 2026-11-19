@@ -6,15 +6,15 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.1.0-T4 (APK provisorio, pantalla de bienvenida de prueba; falta instalarlo en el A34).
-- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4 hecha, próximo T5.
+- **Versión actual**: 0.1.0-T5 (versionCode 2; pantalla aún de prueba, T5 no cambia la UI).
+- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4 y T5 hechas, próximo T6.
 
 ## Última Actualización
 - **Fecha**: 2026-11-19
-- **Resumen**: T4 hecha: esqueleto Kotlin+Compose+Room, clave debug fija (`app/debug.keystore`, PKCS12 creada con openssl), wrapper Gradle 8.9 y workflow `.github/workflows/build.yml`. Action en verde (run 44433727316).
+- **Resumen**: T5 hecha: capa Room (Perfil, Habito, Registro, Checklist + DAOs) en `data/` y lógica pura de fase/consistencia/racha en `logic/`, con 13 tests. Action en verde (run 44446995312, commit 6655abc). T4 confirmada en el A34 (instala y abre).
 
 ## Funcionalidades
-- **Implementadas**: ninguna.
+- **Implementadas (sin UI aún)**: base de datos local y lógica de fase/consistencia/racha.
 - **Pendientes (MVP 0.1)**: perfil, gimnasio, comida sana/chatarra, fase cerebral + consistencia, checklist nocturna (ver `docs/SPEC.md`).
 
 ## Decisiones Clave y Reglas Aprendidas
@@ -32,10 +32,12 @@
 - Este entorno no tiene JDK/SDK y tiene 3 GB RAM: NO compilar acá; compila GitHub Actions en cada push a `main`.
 - El usuario autorizó commit y push directos sin preguntar (2026-11-19).
 - No hay `gh` en este entorno; estado de Actions se consulta con la API pública (curl).
+- Definiciones T5: día 1 = día de inicio; día 90 y 270 ya son fase nueva. Consistencia X de Y: Y = días desde inicio, X = días ✓ (sin dato no es ✓). Racha: ✓ seguidos hasta hoy; hoy sin registro no la corta; no fui y sin dato la cortan; nunca afecta la fase. Fechas en Room como epochDay; sin fila = sin dato.
+- Inicio del hábito: gym = fecha de configuración; comida = primer registro (se crea con `HabitoDao.crear`, no pisa el existente).
 - Clave debug fija en el repo para que los APK nuevos se instalen encima sin perder datos.
 
 ## Problemas Conocidos
-- Pendiente: confirmar en el A34 que el APK 0.1.0-T4 se instala y abre (descargar artifact `RomTracker-APK` desde la pestaña Actions).
+- Ninguno.
 
 ## Últimos Cambios
 - Creados `.claude/settings.json`, `CLAUDE.md`, `docs/index.md`, `docs/PROGRESS.md`.
@@ -52,7 +54,7 @@
 - [x] Fase 3 / Etapa 1: MVP 0.1 en `docs/SPEC.md` (aprobado 2026-11-19).
 - [x] Fase 3 / Etapa 2: diseño y prototipo (pantallas y flujo de R-01 a R-06).
 - [x] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
-- [ ] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
+- [ ] Fase 4: tareas T6–T9 (T4 y T5 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Probar APK T4 en el celular (opcional pero recomendado), `/clear`, y luego Fase 4 / T5: capa de datos Room + lógica de fase/consistencia/racha con tests.
+- `/clear` y luego Fase 4 / T6: pantalla Bienvenida (3 pasos: perfil, clave ancla y "por qué") conectada a Room.
