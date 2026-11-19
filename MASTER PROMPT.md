@@ -3,44 +3,47 @@ PROMPT MAESTRO PARA COMPLETAR
 El objetivo es desarrollar la aplicación de forma iterativa, probando versiones instalables en un teléfono Android desde las primeras etapas.
 
 ============================================================
-1. CONTEXTO DEL PROYECTO (COMPLETAR)
+1. CONTEXTO DEL PROYECTO
 ============================================================
 
 Nombre del proyecto:
-[COMPLETAR]
+RomTracker
 
 Idea / descripción inicial:
-[COMPLETAR]
+Crear una APP para instalar en Android de tracking de hábitos basados en la ciencia
 
 Problema que quiero resolver:
-[COMPLETAR]
+Lograr eficientemente desarrollar habitos saludables, crear ese surco en el cerebro que refuerza la conducta (ejemplo: ir al gym sin pensar, como si fuese un trabajo)
+Del mismo modo, extinguir los malos habitos. Borrar ese zurco que por repiticion reforzo una mala conducta, esa conexion entre las neuronas que sabe con una determinada conducta viene una recompensa (ej: comer golosina ó cosas dulces)
 
 Usuario objetivo:
-[COMPLETAR]
+Personas como yo, que se sienten cansados fisicamente y agotados mentalmente despues del trabajo y no pueden hacer mas nada. La solucion no es ir a la mañana por que por dinamica familiar no pueden ir al gym antes del trabajo. Debe ser si ó si despues del trabajo.
+Personas que se organizan, no tienen agenda, etc
 
 Caso de uso principal:
-[COMPLETAR]
+Desarrollar habtios saludables y manerlos por años
 
 Funcionalidades que imagino inicialmente:
-[COMPLETAR]
+Tracker de gimnasio, dias de comer saludable, dias de comer comida chatarra o dulces, alarma para tomar agua, organizar el día la noche anterior, etc
 
 Funcionalidades deseables para futuras versiones:
-[COMPLETAR]
+Que se pueda iniciar sesion con mail y contraseña, así que cada persona puede instalarse el archivo APK y registrar su progreso
 
 Datos que la aplicación necesita manejar:
-[COMPLETAR]
+Edad, Nombre, Horarios
 
 ¿Necesita conexión a Internet?:
-[COMPLETAR]
+Si, la idea es guarde los datos. Para eso es el seguimiento de habitos
 
 ¿Necesita guardar datos localmente?:
-[COMPLETAR]
+no lo se
 
 Referencias, aplicaciones similares o ejemplos:
-[COMPLETAR]
+Habit Bull
+HabitKit
 
 Otras restricciones o preferencias:
-[COMPLETAR]
+por ahora no
 
 ============================================================
 2. OBJETIVO Y FORMA DE TRABAJO
