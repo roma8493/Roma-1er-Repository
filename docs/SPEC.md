@@ -141,4 +141,17 @@
 
 ### Tareas 0.2
 - [x] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.
-- [ ] T11: Ajustes (editar nombre, hora de salida, clave ancla y "por qué"; botón "Ajustes" en Hoy). No toca registros ni fase. Verifica en el celular: cambiar nombre y ancla, ver el cambio en Hoy y Detalle, persiste al reabrir.
+- [x] T11: Ajustes (editar nombre, hora de salida, clave ancla y "por qué"; botón "Ajustes" en Hoy). No toca registros ni fase. Verifica en el celular: cambiar nombre y ancla, ver el cambio en Hoy y Detalle, persiste al reabrir.
+
+## Versión 0.3 — Agua y estado de ánimo (propuesta 2026-11-19, pendiente de aprobación)
+- **Agua (hábito con fase)**: tarjeta en Hoy con botones +1 / −1 vaso y meta diaria (por defecto 8, editable en Ajustes). Día ✓ = vasos ≥ meta; menos vasos = "no fui"; sin registro = "sin dato". Misma fase cerebral (0–90, 90–270, 270+), barra, consistencia y racha que Gym y Comida. Inicio = primer registro. Detalle con calendario (editable hoy y 7 días atrás) y cantidad de vasos por día.
+- **Estado de ánimo**: 5 caritas (muy mal → muy bien) en Hoy, 1 toque, se puede cambiar durante el día. Se ve en el calendario del Detalle. Sin notas de texto.
+- **Cruce con hábitos**: pantalla/sección "Ánimo y hábitos" que compara el ánimo promedio en días ✓ vs. días no ✓ de cada hábito. Solo aparece con ≥14 días con ánimo registrado; antes muestra cuántos días faltan. Texto neutro ("se asocia", no "causa"), sin lenguaje culpabilizador.
+- Copia de seguridad (T10) debe incluir agua y ánimo; los backups viejos siguen restaurándose.
+- Criterios: (1) agua llega a la meta → día ✓ y suma a racha; (2) ánimo se guarda y se ve en el calendario tras reiniciar; (3) instalar encima de 0.2.1 no pierde datos (migración Room); (4) restaurar una copia 0.2 funciona.
+
+### Tareas 0.3
+- [ ] T12: Agua — datos y lógica (Room con migración, DAO, regla de ✓ por meta, fase/consistencia/racha reutilizadas, copia de seguridad) con tests. Verifica: Action en verde.
+- [ ] T13: Agua — UI (tarjeta en Hoy con +1/−1, Detalle con calendario y vasos, meta en Ajustes). Verifica en el celular.
+- [ ] T14: Ánimo — datos y UI (5 caritas en Hoy, mostrar en calendario, copia de seguridad). Verifica en el celular.
+- [ ] T15: Cruce ánimo–hábitos (promedio ✓ vs no ✓, umbral de 14 días, textos neutros). Verifica en el celular con datos ficticios.
