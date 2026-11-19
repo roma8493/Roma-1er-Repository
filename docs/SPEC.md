@@ -39,14 +39,79 @@
 - La checklist de la noche se marca y se ve al día siguiente.
 - Ningún texto contiene lenguaje culpabilizador ni "21 días".
 
-## Etapa 2 — Diseño y prototipo
-- Pendiente (próxima sesión).
+## Etapa 2 — Diseño y prototipo (aprobada 2026-11-19)
+### Navegación
+- P1 Bienvenida → P2 Hoy ⇄ P3 Detalle del hábito. Sin menús ni pantalla de ajustes en la 0.1.
+
+### P1 · Bienvenida (solo primer uso, 3 pasos con "Siguiente") → R-01, R-02
+1. "¿Cómo te llamás?" + "¿A qué hora salís del trabajo?" (selector de hora).
+2. Clave ancla: "Después de ______, voy al gym" (sugerencia: "salir del trabajo").
+3. "¿Por qué es importante para vos?" → "Empezar" → P2.
+- Si se cierra a mitad de camino, la app vuelve a P1 (no hay hábitos sin perfil).
+
+### P2 · Hoy (pantalla principal) → R-02, R-03, R-04 (resumen), R-06, R-07
+```
+┌─────────────────────────┐
+│ Hola Roma · Jue 19 nov  │
+├─────────────────────────┤
+│ GYM  Adquisición día 34 │  ← tocar la tarjeta abre P3
+│ ▓▓▓▓░░░░░░ 34/90        │
+│ ¿Vamos hoy?             │
+│ [ Fui ✓ ]  [ Hoy no ]   │
+├─────────────────────────┤
+│ COMIDA  Adquisición d.34│  ← tocar la tarjeta abre P3
+│ ▓▓▓▓░░░░░░ 34/90        │
+│ [ Sano ]  [ Chatarra ]  │
+├─────────────────────────┤
+│ Para mañana (noche):    │
+│ ☐ Bolso del gym listo   │
+│ ☐ Comida preparada      │
+│ ☐ Decidí a qué hora voy │
+└─────────────────────────┘
+```
+- El botón elegido queda resaltado; tocar el otro corrige el registro del día.
+- "Hoy no" muestra un mensaje amable (ej. "Mañana es otra oportunidad"), sin culpa.
+- La checklist marcada a la noche es "para mañana": al día siguiente se ve arriba como
+  "Lo que preparaste anoche" (ya marcada) y abajo aparece una checklist nueva vacía.
+- Ítem 3 es solo una casilla (no se elige hora, para no convertirlo en agenda).
+
+### P3 · Detalle del hábito (misma pantalla para Gym y Comida) → R-04, R-05
+```
+┌─────────────────────────┐
+│ ← GYM                   │
+│ Fase: Adquisición d.34  │
+│ ▓▓▓▓░░░░░░ faltan 56    │
+│  días para Consolidación│
+│ Consistencia: 24 de 34  │
+│ Racha actual: 3 días    │
+├─────────────────────────┤
+│   ‹  Noviembre 2026  ›  │
+│ L  M  M  J  V  S  D     │
+│ ✓  ✗  ✓  ·  ✓  ✓  ·     │  ✓ fui/sano · ✗ no fui/chatarra
+│ ...                     │  · sin dato
+├─────────────────────────┤
+│ "Después de salir del   │  (solo en Gym)
+│  trabajo, voy al gym"   │
+│ ¿Por qué? ...           │
+└─────────────────────────┘
+```
+- Calendario mensual con colores. Editables: hoy y los 7 días anteriores; los más viejos se ven
+  atenuados/bloqueados; los futuros, vacíos.
+- Tocar un día editable abre un menú: "Fui / No fui / Sin dato" (o "Sano / Chatarra / Sin dato").
+- Fases: Adquisición 0–90, Consolidación 90–270, Automático 270+ (sin barra: "Automático 🎉").
+  Los días 90 y 270 ya pertenecen a la fase nueva.
+- Comida también muestra fase cerebral (el hábito "comer sano" avanza igual que el gym).
+
+### Reglas de diseño
+- Uso con una mano, botones grandes, a lo sumo 2 toques para registrar el día.
+- Textos según R-07. Tema claro y simple con colores propios (sin copiar HabitKit/HabitBull).
+- Nombre, hora y clave ancla no se editan después de la bienvenida en la 0.1 (ajustes → 0.2).
 
 ## Etapa 3 — Tecnología
 - Pendiente (definirá lenguaje/framework, almacenamiento local y dónde se compila).
 
 ## Tareas Atómicas
 - [x] T1: Redactar y aprobar Etapa 1 (MVP 0.1).
-- [ ] T2: Etapa 2 — pantallas y flujo (bocetos) de R-01 a R-06.
+- [x] T2: Etapa 2 — pantallas y flujo (bocetos) de R-01 a R-06.
 - [ ] T3: Etapa 3 — elegir tecnología y comando de compilación definitivo.
 - [ ] (Las tareas de implementación del APK 0.1 se agregan al aprobar la Etapa 3.)
