@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(node_modules/**)",
+      "Read(.git/**)",
+      "Read(dist/**)",
+      "Read(build/**)",
+      "Read(**/build/**)",
+      "Read(.gradle/**)",
+      "Read(**/.gradle/**)",
+      "Read(.idea/**)",
+      "Read(*.lock)",
+      "Read(*.pdf)",
+      "Read(**/*.apk)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(local.properties)",
+      "Read(.env*)"
+    ]
+  }
+}
