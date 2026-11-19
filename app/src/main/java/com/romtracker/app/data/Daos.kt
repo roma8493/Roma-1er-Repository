@@ -59,6 +59,25 @@ interface RegistroDao {
 }
 
 @Dao
+interface AguaDao {
+    @Query("SELECT * FROM agua")
+    suspend fun todas(): List<Agua>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(agua: Agua)
+
+    /** Volver a "sin dato". */
+    @Query("DELETE FROM agua WHERE fecha = :fecha")
+    suspend fun borrar(fecha: Long)
+
+    @Query("DELETE FROM agua")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(aguas: List<Agua>)
+}
+
+@Dao
 interface ChecklistDao {
     @Query("SELECT * FROM checklist WHERE paraFecha = :paraFecha")
     suspend fun obtener(paraFecha: Long): Checklist?

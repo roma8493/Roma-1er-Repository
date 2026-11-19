@@ -9,13 +9,15 @@ data class Copia(
     val habitos: List<Habito>,
     val registros: List<Registro>,
     val checklists: List<Checklist>,
+    val aguas: List<Agua> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    const val VERSION = 1
+    /** 1 = 0.2 (sin agua). 2 = 0.3 (agrega "aguas"). Las copias versión 1 se siguen leyendo. */
+    const val VERSION = 2
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -44,6 +46,11 @@ object CopiaJson {
                 )
             }
         })
+        raiz.put("aguas", JSONArray().also { a ->
+            c.aguas.forEach {
+                a.put(JSONObject().put("fecha", it.fecha).put("vasos", it.vasos).put("meta", it.meta))
+            }
+        })
         return raiz.toString(2)
     }
 
@@ -65,7 +72,9 @@ object CopiaJson {
             )
             val habitos = raiz.getJSONArray("habitos").objetos().map {
                 val tipo = it.getString("tipo")
-                if (tipo != TipoHabito.GYM && tipo != TipoHabito.COMIDA) throw CopiaInvalida("La copia tiene un hábito desconocido.")
+                if (tipo != TipoHabito.GYM && tipo != TipoHabito.COMIDA && tipo != TipoHabito.AGUA) {
+                    throw CopiaInvalida("La copia tiene un hábito desconocido.")
+                }
                 Habito(tipo, it.getLong("fechaInicio"))
             }
             val registros = raiz.getJSONArray("registros").objetos().map {
@@ -76,7 +85,11 @@ object CopiaJson {
             val checklists = raiz.getJSONArray("checklists").objetos().map {
                 Checklist(it.getLong("paraFecha"), it.getBoolean("bolso"), it.getBoolean("comida"), it.getBoolean("hora"))
             }
-            return Copia(perfil, habitos, registros, checklists)
+            // Las copias 0.2 no traen "aguas": se leen como lista vacía.
+            val aguas = raiz.optJSONArray("aguas")?.objetos()?.map {
+                Agua(it.getLong("fecha"), it.getInt("vasos"), it.getInt("meta"))
+            } ?: emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

@@ -37,7 +37,19 @@ data class Checklist(
     val hora: Boolean = false,
 )
 
+/**
+ * Vasos de agua de un día y la meta que regía ESE día (así cambiar la meta no reinterpreta el pasado).
+ * Día ✓ = vasos >= meta; menos = "no fui"; sin fila = "sin dato".
+ */
+@Entity(tableName = "agua")
+data class Agua(
+    @PrimaryKey val fecha: Long,
+    val vasos: Int,
+    val meta: Int,
+)
+
 object TipoHabito {
     const val GYM = "GYM"
     const val COMIDA = "COMIDA"
+    const val AGUA = "AGUA"
 }
