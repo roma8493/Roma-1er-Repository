@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -116,7 +117,9 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 if (e.metaSiguiente != null && e.diasParaSiguiente != null) {
                     LinearProgressIndicator(
                         progress = { (dia.toFloat() / e.metaSiguiente).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(12.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                     )
                     val siguiente = if (e.fase == Fase.ADQUISICION) "Consolidación" else "Automático"
                     Text("Faltan ${e.diasParaSiguiente} días para $siguiente")
