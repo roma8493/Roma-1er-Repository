@@ -130,5 +130,5 @@
   Verifica: tests unitarios pasan en Actions (días 89/90/91, 269/270/271, "no fui" no reinicia, "sin dato").
 - [x] T6: Pantalla Bienvenida (3 pasos: perfil, clave ancla y "por qué"). Verifica: persiste tras cerrar/reiniciar.
 - [x] T7: Pantalla Hoy (registro gym/comida en ≤2 toques, corregir, checklist nocturna). Verifica en el celular.
-- [ ] T8: Pantalla Detalle (fase, barra, consistencia, racha, calendario mensual, completar hasta 7 días atrás).
+- [x] T8: Pantalla Detalle (fase, barra, consistencia, racha, calendario mensual, completar hasta 7 días atrás).
 - [ ] T9: Revisión de textos (R-07), APK 0.1.0 final, `README.md` con instalación. Verifica: criterios de aceptación.
