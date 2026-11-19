@@ -124,7 +124,7 @@
 - [x] T1: Redactar y aprobar Etapa 1 (MVP 0.1).
 - [x] T2: Etapa 2 — pantallas y flujo (bocetos) de R-01 a R-06.
 - [x] T3: Etapa 3 — elegir tecnología y comando de compilación definitivo.
-- [ ] T4: Esqueleto del proyecto + clave debug fija + workflow de GitHub Actions. Verifica: Action en verde,
+- [x] T4: Esqueleto del proyecto + clave debug fija + workflow de GitHub Actions. Verifica: Action en verde,
   APK descargable que se instala en el A34 y muestra una pantalla de bienvenida provisoria.
 - [ ] T5: Capa de datos (Room: perfil, hábitos, registros diarios, checklist) + lógica de fase/consistencia/racha.
   Verifica: tests unitarios pasan en Actions (días 89/90/91, 269/270/271, "no fui" no reinicia, "sin dato").

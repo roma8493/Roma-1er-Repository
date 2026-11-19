@@ -6,12 +6,12 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: Ninguna (sin APK todavía).
-- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Próximo: Fase 4, tarea T4.
+- **Versión actual**: 0.1.0-T4 (APK provisorio, pantalla de bienvenida de prueba; falta instalarlo en el A34).
+- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4 hecha, próximo T5.
 
 ## Última Actualización
 - **Fecha**: 2026-11-19
-- **Resumen**: T3 hecha: tecnología aprobada (Kotlin + Compose + Room, GitHub Actions, APK debug con clave fija). Tareas T4–T9 agregadas a `docs/SPEC.md`.
+- **Resumen**: T4 hecha: esqueleto Kotlin+Compose+Room, clave debug fija (`app/debug.keystore`, PKCS12 creada con openssl), wrapper Gradle 8.9 y workflow `.github/workflows/build.yml`. Action en verde (run 44433727316).
 
 ## Funcionalidades
 - **Implementadas**: ninguna.
@@ -30,10 +30,12 @@
 - Diseño 0.1: 3 pantallas (Bienvenida 3 pasos → Hoy ⇄ Detalle con calendario mensual). Sin ajustes en 0.1.
 - Checklist ítem 3 = casilla "Decidí a qué hora voy" (sin elegir hora). Comida también tiene fase cerebral.
 - Este entorno no tiene JDK/SDK y tiene 3 GB RAM: NO compilar acá; compila GitHub Actions en cada push a `main`.
+- El usuario autorizó commit y push directos sin preguntar (2026-11-19).
+- No hay `gh` en este entorno; estado de Actions se consulta con la API pública (curl).
 - Clave debug fija en el repo para que los APK nuevos se instalen encima sin perder datos.
 
 ## Problemas Conocidos
-- Sin verificar todavía: que el workflow de GitHub Actions compile (se prueba en T4).
+- Pendiente: confirmar en el A34 que el APK 0.1.0-T4 se instala y abre (descargar artifact `RomTracker-APK` desde la pestaña Actions).
 
 ## Últimos Cambios
 - Creados `.claude/settings.json`, `CLAUDE.md`, `docs/index.md`, `docs/PROGRESS.md`.
@@ -53,4 +55,4 @@
 - [ ] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Fase 4 / T4 (en sesión limpia, con Sonnet 5.5): esqueleto del proyecto Kotlin + Compose, clave debug fija y workflow de GitHub Actions.
+- Probar APK T4 en el celular (opcional pero recomendado), `/clear`, y luego Fase 4 / T5: capa de datos Room + lógica de fase/consistencia/racha con tests.
