@@ -132,3 +132,12 @@
 - [x] T7: Pantalla Hoy (registro gym/comida en ≤2 toques, corregir, checklist nocturna). Verifica en el celular.
 - [x] T8: Pantalla Detalle (fase, barra, consistencia, racha, calendario mensual, completar hasta 7 días atrás).
 - [x] T9: Revisión de textos (R-07), APK 0.1.0 final, `README.md` con instalación. Verifica: criterios de aceptación.
+
+## Versión 0.2 — Copia de seguridad (aprobada 2026-11-19)
+- Icono "Copia" arriba a la derecha en Hoy → pantalla con "Guardar copia" y "Restaurar copia".
+- Guardar: archivo `romtracker-copia-AAAA-MM-DD.json` que el usuario elige dónde guardar (selector de Android; sin permisos ni Internet). Incluye perfil, hábitos, registros y checklists, con número de versión.
+- Restaurar: elige un archivo, valida, pide confirmación y reemplaza todo en una sola transacción. Archivo inválido → mensaje claro y no cambia nada.
+- Criterios: (1) la copia se abre con un editor de texto; (2) desinstalar, instalar y restaurar deja nombre, ancla, fase y calendario como estaban; (3) un archivo cualquiera (ej. foto) se rechaza sin tocar los datos.
+
+### Tareas 0.2
+- [ ] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.

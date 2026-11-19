@@ -13,8 +13,8 @@ android {
         applicationId = "com.romtracker.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.0"
+        versionCode = 7
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -47,4 +47,6 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
 
     testImplementation("junit:junit:4.13.2")
+    // org.json real para los tests en la JVM (en el celular lo trae Android; no entra al APK)
+    testImplementation("org.json:json:20240303")
 }

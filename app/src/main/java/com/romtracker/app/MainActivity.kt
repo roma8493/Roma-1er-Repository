@@ -23,8 +23,11 @@ import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.ui.Bienvenida
 import com.romtracker.app.ui.Detalle
 import com.romtracker.app.ui.Hoy
+import com.romtracker.app.ui.PantallaCopia
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+
+private const val PANTALLA_COPIA = "COPIA"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +62,12 @@ class MainActivity : ComponentActivity() {
                                 perfil = nuevo
                             }
                         }
-                        abierto == null -> Hoy(db, perfil!!) { abierto = it }
+                        abierto == null -> Hoy(db, perfil!!, { abierto = it }, { abierto = PANTALLA_COPIA })
+                        abierto == PANTALLA_COPIA -> PantallaCopia(
+                            db,
+                            alVolver = { abierto = null },
+                            alRestaurar = { restaurado -> perfil = restaurado; abierto = null },
+                        )
                         else -> Detalle(db, perfil!!, abierto!!) { abierto = null }
                     }
                     }

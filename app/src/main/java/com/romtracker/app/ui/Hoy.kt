@@ -17,6 +17,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,7 +52,7 @@ private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
  * y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
-fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit) {
+fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia: () -> Unit) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
 
@@ -101,10 +102,18 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit) {
         val diaSemana = fecha.dayOfWeek.getDisplayName(TextStyle.SHORT, LOCALE_ES)
             .replaceFirstChar { it.uppercase() }
         val mes = fecha.month.getDisplayName(TextStyle.SHORT, LOCALE_ES)
-        Text(
-            "Hola ${perfil.nombre} · $diaSemana ${fecha.dayOfMonth} $mes",
-            style = MaterialTheme.typography.titleLarge,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Hola ${perfil.nombre} · $diaSemana ${fecha.dayOfMonth} $mes",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = alAbrirCopia) { Text("Copia") }
+        }
 
         TarjetaHabito(
             titulo = "GYM",
