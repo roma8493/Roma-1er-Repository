@@ -13,8 +13,8 @@ android {
         applicationId = "com.romtracker.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.0-T5"
+        versionCode = 3
+        versionName = "0.1.0-T6"
     }
 
     signingConfigs {

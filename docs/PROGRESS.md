@@ -6,12 +6,12 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.1.0-T5 (versionCode 2; pantalla aún de prueba, T5 no cambia la UI).
-- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4 y T5 hechas, próximo T6.
+- **Versión actual**: 0.1.0-T6 (versionCode 3; Bienvenida en 3 pasos + pantalla provisoria con los datos guardados).
+- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4, T5 y T6 hechas, próximo T7.
 
 ## Última Actualización
 - **Fecha**: 2026-11-19
-- **Resumen**: T5 hecha: capa Room (Perfil, Habito, Registro, Checklist + DAOs) en `data/` y lógica pura de fase/consistencia/racha en `logic/`, con 13 tests. Action en verde (run 44446995312, commit 6655abc). T4 confirmada en el A34 (instala y abre).
+- **Resumen**: T6 hecha: Bienvenida (nombre+hora de salida, clave ancla, por qué) en `ui/Bienvenida.kt`; al pulsar Empezar guarda Perfil y crea el hábito GYM (inicio = hoy) en Room; sin perfil la app siempre vuelve al paso 1. Pendiente confirmar Action y probar en el A34. Antes, T5 hecha: capa Room (Perfil, Habito, Registro, Checklist + DAOs) en `data/` y lógica pura de fase/consistencia/racha en `logic/`, con 13 tests. Action en verde (run 44446995312, commit 6655abc). T4 confirmada en el A34 (instala y abre).
 
 ## Funcionalidades
 - **Implementadas (sin UI aún)**: base de datos local y lógica de fase/consistencia/racha.
@@ -54,7 +54,7 @@
 - [x] Fase 3 / Etapa 1: MVP 0.1 en `docs/SPEC.md` (aprobado 2026-11-19).
 - [x] Fase 3 / Etapa 2: diseño y prototipo (pantallas y flujo de R-01 a R-06).
 - [x] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
-- [ ] Fase 4: tareas T6–T9 (T4 y T5 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
+- [ ] Fase 4: tareas T7–T9 (T4–T6 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- `/clear` y luego Fase 4 / T6: pantalla Bienvenida (3 pasos: perfil, clave ancla y "por qué") conectada a Room.
+- Probar el APK T6 en el A34 (ver abajo) y luego `/clear` y Fase 4 / T7: pantalla Hoy.
