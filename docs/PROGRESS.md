@@ -36,6 +36,8 @@
 - Inicio del hábito: gym = fecha de configuración; comida = primer registro (se crea con `HabitoDao.crear`, no pisa el existente).
 - Clave debug fija en el repo para que los APK nuevos se instalen encima sin perder datos.
 
+- Plan 0.3 aprobado 2026-11-19: agua = hábito con fase, vasos con meta 8 editable; ánimo = 5 caritas; cruce ánimo–hábitos con umbral de 14 días. Tareas T12–T15 en `docs/SPEC.md`.
+
 ## Problemas Conocidos
 - Corregido en T7: el contenido se dibujaba bajo la barra de estado/cámara frontal (Android 15 fuerza pantalla completa); se agregó `safeDrawingPadding()` en `MainActivity.kt`. Falta confirmar en el A34.
 
@@ -57,4 +59,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- T11 cerrada. Elegir la siguiente tarea de la versión 0.2 (recordatorios, agua u otra) y definirla en `docs/SPEC.md` antes de implementar.
+- Plan 0.3 aprobado (agua + ánimo). Siguiente: T12 (agua, datos y lógica con migración Room y tests) en sesión limpia. Antes de instalar, hacer copia de seguridad.

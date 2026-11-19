@@ -143,7 +143,7 @@
 - [x] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.
 - [x] T11: Ajustes (editar nombre, hora de salida, clave ancla y "por qué"; botón "Ajustes" en Hoy). No toca registros ni fase. Verifica en el celular: cambiar nombre y ancla, ver el cambio en Hoy y Detalle, persiste al reabrir.
 
-## Versión 0.3 — Agua y estado de ánimo (propuesta 2026-11-19, pendiente de aprobación)
+## Versión 0.3 — Agua y estado de ánimo (aprobada 2026-11-19)
 - **Agua (hábito con fase)**: tarjeta en Hoy con botones +1 / −1 vaso y meta diaria (por defecto 8, editable en Ajustes). Día ✓ = vasos ≥ meta; menos vasos = "no fui"; sin registro = "sin dato". Misma fase cerebral (0–90, 90–270, 270+), barra, consistencia y racha que Gym y Comida. Inicio = primer registro. Detalle con calendario (editable hoy y 7 días atrás) y cantidad de vasos por día.
 - **Estado de ánimo**: 5 caritas (muy mal → muy bien) en Hoy, 1 toque, se puede cambiar durante el día. Se ve en el calendario del Detalle. Sin notas de texto.
 - **Cruce con hábitos**: pantalla/sección "Ánimo y hábitos" que compara el ánimo promedio en días ✓ vs. días no ✓ de cada hábito. Solo aparece con ≥14 días con ánimo registrado; antes muestra cuántos días faltan. Texto neutro ("se asocia", no "causa"), sin lenguaje culpabilizador.
