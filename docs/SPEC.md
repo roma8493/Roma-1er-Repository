@@ -140,4 +140,4 @@
 - Criterios: (1) la copia se abre con un editor de texto; (2) desinstalar, instalar y restaurar deja nombre, ancla, fase y calendario como estaban; (3) un archivo cualquiera (ej. foto) se rechaza sin tocar los datos.
 
 ### Tareas 0.2
-- [ ] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.
+- [x] T10: Copia de seguridad (guardar/restaurar .json). Verifica en el celular: guardar, desinstalar, reinstalar, restaurar.
