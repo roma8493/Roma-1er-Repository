@@ -37,7 +37,7 @@
 - Clave debug fija en el repo para que los APK nuevos se instalen encima sin perder datos.
 
 ## Problemas Conocidos
-- Ninguno.
+- Corregido en T7: el contenido se dibujaba bajo la barra de estado/cámara frontal (Android 15 fuerza pantalla completa); se agregó `safeDrawingPadding()` en `MainActivity.kt`. Falta confirmar en el A34.
 
 ## Últimos Cambios
 - Creados `.claude/settings.json`, `CLAUDE.md`, `docs/index.md`, `docs/PROGRESS.md`.
