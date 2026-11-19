@@ -54,7 +54,7 @@
 - [x] Fase 3 / Etapa 1: MVP 0.1 en `docs/SPEC.md` (aprobado 2026-11-19).
 - [x] Fase 3 / Etapa 2: diseño y prototipo (pantallas y flujo de R-01 a R-06).
 - [x] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
-- [ ] Fase 4: tarea T9 (T4–T8 hechas) de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
+- [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
 - `/clear` y T9: revisión de textos (R-07), APK 0.1.0 final y `README.md` con instalación.
