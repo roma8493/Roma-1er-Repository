@@ -107,11 +107,28 @@
 - Textos según R-07. Tema claro y simple con colores propios (sin copiar HabitKit/HabitBull).
 - Nombre, hora y clave ancla no se editan después de la bienvenida en la 0.1 (ajustes → 0.2).
 
-## Etapa 3 — Tecnología
-- Pendiente (definirá lenguaje/framework, almacenamiento local y dónde se compila).
+## Etapa 3 — Tecnología (aprobada 2026-11-19)
+- Lenguaje/UI: Kotlin + Jetpack Compose (Material 3), una sola Activity. Proyecto Gradle (Kotlin DSL).
+- Almacenamiento local: Room (SQLite) con KSP. Sin Internet, sin permisos especiales.
+- SDK: minSdk 26 (Android 8), targetSdk/compileSdk = último estable al crear el proyecto.
+- Compilación: GitHub Actions (gratis). Cada push a `main` corre tests y compila; el APK queda como
+  "artifact" descargable desde GitHub. No se compila en este entorno (sin JDK/SDK, 3 GB RAM).
+- Comandos (los corre GitHub Actions): `./gradlew testDebugUnitTest assembleDebug`.
+  Salida: `app/build/outputs/apk/debug/app-debug.apk`.
+- APK 0.1: debug. Se incluye en el repo una clave debug FIJA (`app/debug.keystore`, no es secreta)
+  para que cada APK nuevo se instale encima del anterior sin desinstalar ni perder datos.
+- Versión: `versionName` 0.1.x y `versionCode` creciente en cada APK entregado.
+- Lógica de fases y consistencia en funciones puras con tests unitarios (sin celular).
 
 ## Tareas Atómicas
 - [x] T1: Redactar y aprobar Etapa 1 (MVP 0.1).
 - [x] T2: Etapa 2 — pantallas y flujo (bocetos) de R-01 a R-06.
-- [ ] T3: Etapa 3 — elegir tecnología y comando de compilación definitivo.
-- [ ] (Las tareas de implementación del APK 0.1 se agregan al aprobar la Etapa 3.)
+- [x] T3: Etapa 3 — elegir tecnología y comando de compilación definitivo.
+- [ ] T4: Esqueleto del proyecto + clave debug fija + workflow de GitHub Actions. Verifica: Action en verde,
+  APK descargable que se instala en el A34 y muestra una pantalla de bienvenida provisoria.
+- [ ] T5: Capa de datos (Room: perfil, hábitos, registros diarios, checklist) + lógica de fase/consistencia/racha.
+  Verifica: tests unitarios pasan en Actions (días 89/90/91, 269/270/271, "no fui" no reinicia, "sin dato").
+- [ ] T6: Pantalla Bienvenida (3 pasos: perfil, clave ancla y "por qué"). Verifica: persiste tras cerrar/reiniciar.
+- [ ] T7: Pantalla Hoy (registro gym/comida en ≤2 toques, corregir, checklist nocturna). Verifica en el celular.
+- [ ] T8: Pantalla Detalle (fase, barra, consistencia, racha, calendario mensual, completar hasta 7 días atrás).
+- [ ] T9: Revisión de textos (R-07), APK 0.1.0 final, `README.md` con instalación. Verifica: criterios de aceptación.

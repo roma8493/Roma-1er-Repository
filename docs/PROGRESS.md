@@ -5,13 +5,13 @@
 ## Ficha del Proyecto
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
-- **Tecnología**: Pendiente (se decide en Etapa 3 dentro de `docs/SPEC.md`).
+- **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
 - **Versión actual**: Ninguna (sin APK todavía).
-- **Estado**: Fases 1 y 2 completadas. Fase 3: Etapas 1 (MVP 0.1) y 2 (diseño) aprobadas en `docs/SPEC.md`. Próximo: Etapa 3 (tecnología).
+- **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Próximo: Fase 4, tarea T4.
 
 ## Última Actualización
 - **Fecha**: 2026-11-19
-- **Resumen**: T2 hecha: diseño de pantallas y flujo (Etapa 2) aprobado y guardado en `docs/SPEC.md`.
+- **Resumen**: T3 hecha: tecnología aprobada (Kotlin + Compose + Room, GitHub Actions, APK debug con clave fija). Tareas T4–T9 agregadas a `docs/SPEC.md`.
 
 ## Funcionalidades
 - **Implementadas**: ninguna.
@@ -29,10 +29,11 @@
 - Días sin registrar = "sin dato"; se pueden completar hasta 7 días atrás.
 - Diseño 0.1: 3 pantallas (Bienvenida 3 pasos → Hoy ⇄ Detalle con calendario mensual). Sin ajustes en 0.1.
 - Checklist ítem 3 = casilla "Decidí a qué hora voy" (sin elegir hora). Comida también tiene fase cerebral.
+- Este entorno no tiene JDK/SDK y tiene 3 GB RAM: NO compilar acá; compila GitHub Actions en cada push a `main`.
+- Clave debug fija en el repo para que los APK nuevos se instalen encima sin perder datos.
 
 ## Problemas Conocidos
-- Comando de compilación `./gradlew assembleDebug` es provisorio hasta aprobar la tecnología.
-- Falta verificar si este entorno puede compilar APK (JDK / Android SDK) o si se compila en la PC del usuario.
+- Sin verificar todavía: que el workflow de GitHub Actions compile (se prueba en T4).
 
 ## Últimos Cambios
 - Creados `.claude/settings.json`, `CLAUDE.md`, `docs/index.md`, `docs/PROGRESS.md`.
@@ -48,8 +49,8 @@
 - [x] Fase 2: Crear `docs/notas/reglas-app-desde-ciencia.md` (reglas R1–R12).
 - [x] Fase 3 / Etapa 1: MVP 0.1 en `docs/SPEC.md` (aprobado 2026-11-19).
 - [x] Fase 3 / Etapa 2: diseño y prototipo (pantallas y flujo de R-01 a R-06).
-- [ ] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
-- [ ] Fase 4: APK 0.1 (Etapa 4) y ciclos iterativos (Etapa 5).
+- [x] Fase 3 / Etapa 3: tecnología y comando de compilación definitivo.
+- [ ] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Fase 3 / Etapa 3 (tarea T3 de `docs/SPEC.md`): en sesión limpia, `/plan` → elegir tecnología, almacenamiento local, dónde se compila y comando de compilación definitivo.
+- Fase 4 / T4 (en sesión limpia, con Sonnet 5.5): esqueleto del proyecto Kotlin + Compose, clave debug fija y workflow de GitHub Actions.

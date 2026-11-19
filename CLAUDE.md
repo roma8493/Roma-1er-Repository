@@ -32,7 +32,7 @@ A. Evaluación → B. Priorización (correcciones / diseño / funciones / arquit
 5. No mezclar listas largas de tareas futuras con la tarea actual.
 
 ## 6. Comandos de Verificación
-- Compilar APK debug (provisorio, confirmar en Etapa 3): `./gradlew assembleDebug`
+- Tests + APK debug (los corre GitHub Actions en cada push a `main`; NO compilar en este entorno): `./gradlew testDebugUnitTest assembleDebug`
 - Salida esperada del APK: `app/build/outputs/apk/debug/app-debug.apk`
 
 ## 7. Mapa de Documentación (Leer bajo demanda)
