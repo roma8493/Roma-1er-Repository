@@ -122,7 +122,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                         trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                     )
                     val siguiente = if (e.fase == Fase.ADQUISICION) "Consolidación" else "Automático"
-                    Text("Faltan ${e.diasParaSiguiente} días para $siguiente")
+                    Text("Falta${if (e.diasParaSiguiente == 1) " 1 día" else "n ${e.diasParaSiguiente} días"} para $siguiente")
                 } else {
                     Text("Automático 🎉")
                 }

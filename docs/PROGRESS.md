@@ -6,7 +6,7 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.1.0-T8 (versionCode 5; Bienvenida + Hoy + Detalle con calendario).
+- **Versión actual**: 0.1.0 (versionCode 6; APK 0.1 completo: Bienvenida, Hoy y Detalle).
 - **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4: T4–T8 hechas; falta T9.
 
 ## Última Actualización
@@ -44,7 +44,7 @@
 - Creadas 3 notas en `docs/notas/` (producto, ciencia-habitos, reglas-app-desde-ciencia), registradas en `docs/index.md`.
 
 ## Cómo Compilar e Instalar
-- Pendiente (se completa en Fase 4 al generar el APK 0.1).
+- Ver `README.md` (descarga del artifact desde GitHub Actions e instalación encima del anterior).
 
 ## Checklist de Tareas Activas
 - [x] Fase 1: Cimientos (settings, CLAUDE.md, index, PROGRESS).
