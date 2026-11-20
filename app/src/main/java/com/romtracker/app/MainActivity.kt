@@ -25,6 +25,7 @@ import com.romtracker.app.ui.Bienvenida
 import com.romtracker.app.ui.Detalle
 import com.romtracker.app.ui.DetalleAnimo
 import com.romtracker.app.ui.Hoy
+import com.romtracker.app.ui.NuevoHabito
 import com.romtracker.app.ui.PantallaCopia
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -32,6 +33,7 @@ import java.time.LocalDate
 private const val PANTALLA_COPIA = "COPIA"
 private const val PANTALLA_AJUSTES = "AJUSTES"
 private const val PANTALLA_ANIMO = "ANIMO"
+private const val PANTALLA_NUEVO_HABITO = "NUEVO_HABITO"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +68,22 @@ class MainActivity : ComponentActivity() {
                                 perfil = nuevo
                             }
                         }
-                        abierto == null -> Hoy(db, perfil!!, { abierto = it }, { abierto = PANTALLA_COPIA }, { abierto = PANTALLA_AJUSTES })
+                        abierto == null -> Hoy(
+                            db, perfil!!,
+                            alAbrir = { abierto = it },
+                            alAbrirCopia = { abierto = PANTALLA_COPIA },
+                            alAbrirAjustes = { abierto = PANTALLA_AJUSTES },
+                            alNuevoHabito = { abierto = PANTALLA_NUEVO_HABITO },
+                        )
+                        abierto == PANTALLA_NUEVO_HABITO -> NuevoHabito(
+                            alVolver = { abierto = null },
+                            alCrear = { nombre, tipo, ancla, porQue ->
+                                scope.launch {
+                                    db.crearPropio(nombre, ancla, porQue, tipo, LocalDate.now().toEpochDay())
+                                    abierto = null
+                                }
+                            },
+                        )
                         abierto == PANTALLA_AJUSTES -> Ajustes(
                             perfil!!,
                             alVolver = { abierto = null },

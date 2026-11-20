@@ -38,9 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Agua
 import com.romtracker.app.data.AppDatabase
+import com.romtracker.app.data.HabitoPropio
+import com.romtracker.app.data.PREFIJO_PROPIO
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoHabito
+import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.Registros
 import com.romtracker.app.logic.ajustarVasos
@@ -58,7 +61,7 @@ import java.util.Locale
 
 private val LOCALE_ES = Locale("es", "AR")
 
-/** Pantalla P3: detalle de un hábito (GYM, COMIDA o AGUA) con calendario mensual. */
+/** Pantalla P3: detalle de un hábito (GYM, COMIDA, AGUA o propio "PROPIO_<id>") con calendario mensual. */
 @Composable
 fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit) {
     BackHandler(onBack = alVolver)
@@ -67,9 +70,13 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     val scope = rememberCoroutineScope()
     val esGym = tipo == TipoHabito.GYM
     val esAgua = tipo == TipoHabito.AGUA
-    val titulo = when (tipo) {
-        TipoHabito.GYM -> "GYM"
-        TipoHabito.AGUA -> "AGUA"
+    val esPropio = tipo.startsWith(PREFIJO_PROPIO)
+    var propio by remember { mutableStateOf<HabitoPropio?>(null) }
+    val dejar = propio?.tipo == TipoPropio.DEJAR
+    val titulo = when {
+        esPropio -> propio?.nombre ?: "HÁBITO"
+        tipo == TipoHabito.GYM -> "GYM"
+        tipo == TipoHabito.AGUA -> "AGUA"
         else -> "COMIDA"
     }
 
@@ -79,6 +86,16 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
 
     suspend fun cargar() {
+        if (esPropio) {
+            // Hábito propio: los registros guardan el ✓ ya resuelto según el tipo.
+            val id = tipo.removePrefix(PREFIJO_PROPIO).toLongOrNull()
+            val p = db.habitoPropioDao().todos().firstOrNull { it.id == id } ?: return
+            propio = p
+            inicio = LocalDate.ofEpochDay(p.fechaInicio)
+            registros = db.registroDao().todos(tipo)
+                .associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
+            return
+        }
         val h = db.habitoDao().obtener(tipo) ?: return
         inicio = LocalDate.ofEpochDay(h.fechaInicio)
         if (esAgua) {
@@ -215,8 +232,17 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                                             "−1 vaso" to { cambiarVasos(fecha, -1) },
                                             "Sin dato" to { borrarAgua(fecha) },
                                         ) else listOf(
-                                            (if (esGym) "Fui" else "Sano") to { marcar(fecha, true) },
-                                            (if (esGym) "No fui" else "Chatarra") to { marcar(fecha, false) },
+                                            // Propio: la 1.ª opción es siempre el ✓ (en DEJAR = "No lo hice").
+                                            when {
+                                                esPropio -> if (dejar) "No lo hice" else "Lo hice"
+                                                esGym -> "Fui"
+                                                else -> "Sano"
+                                            } to { marcar(fecha, true) },
+                                            when {
+                                                esPropio -> if (dejar) "Lo hice" else "No lo hice"
+                                                esGym -> "No fui"
+                                                else -> "Chatarra"
+                                            } to { marcar(fecha, false) },
                                             "Sin dato" to { marcar(fecha, null) },
                                         ),
                                     )
@@ -226,6 +252,8 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     }
                 }
                 val leyenda = when {
+                    esPropio && dejar -> "✓ no lo hice · ✗ lo hice · · sin dato. "
+                    esPropio -> "✓ lo hice · ✗ no lo hice · · sin dato. "
                     esAgua -> "Cada día muestra vasos/meta. Fondo marcado = llegaste a la meta · · sin dato. "
                     esGym -> "✓ fui · ✗ no fui · · sin dato. "
                     else -> "✓ sano · ✗ chatarra · · sin dato. "
@@ -234,6 +262,17 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     leyenda + "Podés completar hoy y los 7 días anteriores.",
                     style = MaterialTheme.typography.bodySmall,
                 )
+            }
+        }
+
+        val p = propio
+        if (esPropio && p != null) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Después de ${p.claveAncla}", style = MaterialTheme.typography.titleMedium)
+                    Text(if (dejar) "Quiero dejar: ${p.nombre}" else "Quiero hacer: ${p.nombre}")
+                    Text("¿Por qué? ${p.porQue}")
+                }
             }
         }
 

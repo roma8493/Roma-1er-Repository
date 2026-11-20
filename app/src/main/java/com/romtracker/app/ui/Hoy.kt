@@ -32,9 +32,12 @@ import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Animo
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Checklist
+import com.romtracker.app.data.HabitoPropio
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoHabito
+import com.romtracker.app.data.TipoPropio
+import com.romtracker.app.data.claveRegistroPropio
 import com.romtracker.app.logic.CARITAS
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.NOMBRES_ANIMO
@@ -60,7 +63,14 @@ private data class AguaEstado(val dia: Int?, val vasos: Int, val meta: Int)
  * la tarjeta Agua (+1 / −1 vaso) y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
-fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia: () -> Unit, alAbrirAjustes: () -> Unit) {
+fun Hoy(
+    db: AppDatabase,
+    perfil: Perfil,
+    alAbrir: (String) -> Unit,
+    alAbrirCopia: () -> Unit,
+    alAbrirAjustes: () -> Unit,
+    alNuevoHabito: () -> Unit,
+) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
 
@@ -68,6 +78,8 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
     var comida by remember { mutableStateOf<TarjetaEstado?>(null) }
     var agua by remember { mutableStateOf<AguaEstado?>(null) }
     var animo by remember { mutableStateOf<Int?>(null) }
+    // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
+    var propios by remember { mutableStateOf<List<Pair<HabitoPropio, TarjetaEstado>>>(emptyList()) }
     var anoche by remember { mutableStateOf<Checklist?>(null) }
     var paraManana by remember { mutableStateOf(Checklist(fecha.plusDays(1).toEpochDay())) }
 
@@ -89,7 +101,22 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
         )
     }
 
+    suspend fun cargarPropios(): List<Pair<HabitoPropio, TarjetaEstado>> =
+        db.habitoPropioDao().todos().map { p ->
+            val registroHoy = db.registroDao().todos(claveRegistroPropio(p.id))
+                .firstOrNull { it.fecha == fecha.toEpochDay() }?.cumplido
+            p to TarjetaEstado(diaDelHabito(LocalDate.ofEpochDay(p.fechaInicio), fecha), registroHoy)
+        }
+
+    fun registrarPropio(p: HabitoPropio, cumplido: Boolean) {
+        scope.launch {
+            db.registroDao().guardar(Registro(claveRegistroPropio(p.id), fecha.toEpochDay(), cumplido))
+            propios = cargarPropios()
+        }
+    }
+
     LaunchedEffect(Unit) {
+        propios = cargarPropios()
         gym = cargarHabito(TipoHabito.GYM)
         agua = cargarAgua()
         comida = cargarHabito(TipoHabito.COMIDA)
@@ -155,6 +182,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextButton(onClick = alAbrirAjustes) { Text("Ajustes") }
             TextButton(onClick = alAbrirCopia) { Text("Copia") }
+            TextButton(onClick = alNuevoHabito) { Text("Nuevo hábito") }
         }
 
         TarjetaHabito(
@@ -192,6 +220,22 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
             alAbrir = { alAbrir("ANIMO") },
             alElegir = { elegirAnimo(it) },
         )
+
+        propios.forEach { (p, estado) ->
+            val dejar = p.tipo == TipoPropio.DEJAR
+            TarjetaHabito(
+                titulo = p.nombre,
+                estado = estado,
+                pregunta = if (dejar) "¿Cómo va el día?" else "¿Lo hiciste hoy?",
+                // El 1.er botón siempre es el ✓: en DEJAR significa "no lo hice".
+                textoSi = if (dejar) "No lo hice 💪" else "Sí ✓",
+                textoNo = if (dejar) "Sí lo hice" else "Hoy no",
+                mensajeSi = if (dejar) "Un día más sin hacerlo. ¡Bien!" else "¡Qué bueno que lo hiciste!",
+                mensajeNo = if (dejar) "Un día no borra lo que venís logrando." else "Mañana es otra oportunidad.",
+                alAbrir = { alAbrir(claveRegistroPropio(p.id)) },
+                alElegir = { registrarPropio(p, it) },
+            )
+        }
 
         if (anoche != null) {
             val a = anoche!!
