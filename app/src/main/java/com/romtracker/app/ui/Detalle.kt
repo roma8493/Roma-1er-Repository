@@ -13,15 +13,19 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,6 +77,8 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     val esAgua = tipo == TipoHabito.AGUA
     val esPropio = tipo.startsWith(PREFIJO_PROPIO)
     var propio by remember { mutableStateOf<HabitoPropio?>(null) }
+    var editando by rememberSaveable { mutableStateOf(false) }
+    var borrando by rememberSaveable { mutableStateOf(false) }
     val dejar = propio?.tipo == TipoPropio.DEJAR
     val titulo = when {
         esPropio -> propio?.nombre ?: "HÁBITO"
@@ -272,7 +279,41 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     Text("Después de ${p.claveAncla}", style = MaterialTheme.typography.titleMedium)
                     Text(if (dejar) "Quiero dejar: ${p.nombre}" else "Quiero hacer: ${p.nombre}")
                     Text("¿Por qué? ${p.porQue}")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { editando = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Editar") }
+                        OutlinedButton(onClick = { borrando = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Borrar hábito") }
+                    }
                 }
+            }
+            if (editando) {
+                DialogoEditarPropio(
+                    p,
+                    alCancelar = { editando = false },
+                    alGuardar = { nombre, ancla, porQue ->
+                        scope.launch {
+                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue))
+                            editando = false
+                            cargar()
+                        }
+                    },
+                )
+            }
+            if (borrando) {
+                AlertDialog(
+                    onDismissRequest = { borrando = false },
+                    title = { Text("¿Borrar \"${p.nombre}\"?") },
+                    text = { Text("Se borra el hábito y todo su historial (calendario, fase y racha). No se puede deshacer.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            scope.launch {
+                                db.borrarPropio(p.id)
+                                borrando = false
+                                alVolver()
+                            }
+                        }) { Text("Borrar") }
+                    },
+                    dismissButton = { TextButton(onClick = { borrando = false }) { Text("Cancelar") } },
+                )
             }
         }
 
@@ -334,4 +375,35 @@ internal fun CeldaDia(
             }
         }
     }
+}
+
+/** Diálogo para editar nombre, ancla y "por qué" de un hábito propio (el tipo y el inicio no cambian). */
+@Composable
+private fun DialogoEditarPropio(
+    p: HabitoPropio,
+    alCancelar: () -> Unit,
+    alGuardar: (nombre: String, ancla: String, porQue: String) -> Unit,
+) {
+    var nombre by rememberSaveable { mutableStateOf(p.nombre) }
+    var ancla by rememberSaveable { mutableStateOf(p.claveAncla) }
+    var porQue by rememberSaveable { mutableStateOf(p.porQue) }
+    val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank()
+    AlertDialog(
+        onDismissRequest = alCancelar,
+        title = { Text("Editar hábito") },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                OutlinedTextField(nombre, { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim()) }) { Text("Guardar") }
+        },
+        dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
+    )
 }
