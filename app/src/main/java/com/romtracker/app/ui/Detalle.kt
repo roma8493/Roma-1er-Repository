@@ -249,7 +249,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
 }
 
 @Composable
-private fun CeldaDia(
+internal fun CeldaDia(
     fecha: LocalDate,
     valor: Boolean?,
     esHoy: Boolean,

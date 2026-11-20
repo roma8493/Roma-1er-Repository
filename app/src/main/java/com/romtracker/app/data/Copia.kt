@@ -10,14 +10,15 @@ data class Copia(
     val registros: List<Registro>,
     val checklists: List<Checklist>,
     val aguas: List<Agua> = emptyList(),
+    val animos: List<Animo> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 3
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 4
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -51,6 +52,9 @@ object CopiaJson {
             c.aguas.forEach {
                 a.put(JSONObject().put("fecha", it.fecha).put("vasos", it.vasos).put("meta", it.meta))
             }
+        })
+        raiz.put("animos", JSONArray().also { a ->
+            c.animos.forEach { a.put(JSONObject().put("fecha", it.fecha).put("valor", it.valor)) }
         })
         return raiz.toString(2)
     }
@@ -92,7 +96,13 @@ object CopiaJson {
             val aguas = raiz.optJSONArray("aguas")?.objetos()?.map {
                 Agua(it.getLong("fecha"), it.getInt("vasos"), it.getInt("meta"))
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas)
+            // Las copias anteriores a la versión 4 no traen "animos": se leen como lista vacía.
+            val animos = raiz.optJSONArray("animos")?.objetos()?.map {
+                val v = it.getInt("valor")
+                if (v !in 1..5) throw CopiaInvalida("La copia tiene un ánimo fuera de rango.")
+                Animo(it.getLong("fecha"), v)
+            } ?: emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas, animos)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

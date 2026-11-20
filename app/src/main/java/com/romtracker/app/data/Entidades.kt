@@ -51,6 +51,13 @@ data class Agua(
     val meta: Int,
 )
 
+/** Ánimo de un día: 1 (muy mal) a 5 (muy bien). Sin fila = "sin dato". No es un hábito: no tiene fase ni racha. */
+@Entity(tableName = "animo")
+data class Animo(
+    @PrimaryKey val fecha: Long,
+    val valor: Int,
+)
+
 object TipoHabito {
     const val GYM = "GYM"
     const val COMIDA = "COMIDA"

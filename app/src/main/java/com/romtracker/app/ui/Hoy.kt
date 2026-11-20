@@ -29,12 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.romtracker.app.data.Animo
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Checklist
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoHabito
+import com.romtracker.app.logic.CARITAS
 import com.romtracker.app.logic.Fase
+import com.romtracker.app.logic.NOMBRES_ANIMO
 import com.romtracker.app.logic.ajustarVasos
 import com.romtracker.app.logic.cumplidoAgua
 import com.romtracker.app.logic.diaDelHabito
@@ -64,6 +67,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
     var gym by remember { mutableStateOf<TarjetaEstado?>(null) }
     var comida by remember { mutableStateOf<TarjetaEstado?>(null) }
     var agua by remember { mutableStateOf<AguaEstado?>(null) }
+    var animo by remember { mutableStateOf<Int?>(null) }
     var anoche by remember { mutableStateOf<Checklist?>(null) }
     var paraManana by remember { mutableStateOf(Checklist(fecha.plusDays(1).toEpochDay())) }
 
@@ -89,6 +93,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
         gym = cargarHabito(TipoHabito.GYM)
         agua = cargarAgua()
         comida = cargarHabito(TipoHabito.COMIDA)
+        animo = db.animoDao().todos().firstOrNull { it.fecha == fecha.toEpochDay() }?.valor
         anoche = db.checklistDao().obtener(fecha.toEpochDay())
         paraManana = db.checklistDao().obtener(fecha.plusDays(1).toEpochDay()) ?: paraManana
     }
@@ -114,6 +119,11 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
             db.registrarAgua(fecha.toEpochDay(), nuevos, actual.meta)
             agua = cargarAgua()
         }
+    }
+
+    fun elegirAnimo(valor: Int) {
+        animo = valor
+        scope.launch { db.animoDao().guardar(Animo(fecha.toEpochDay(), valor)) }
     }
 
     fun guardarChecklist(nueva: Checklist) {
@@ -175,6 +185,12 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
             estado = agua,
             alAbrir = { alAbrir(TipoHabito.AGUA) },
             alCambiar = { cambiarVasos(it) },
+        )
+
+        TarjetaAnimo(
+            valor = animo,
+            alAbrir = { alAbrir("ANIMO") },
+            alElegir = { elegirAnimo(it) },
         )
 
         if (anoche != null) {
@@ -337,6 +353,24 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
                     textAlign = TextAlign.End,
                 )
             }
+        }
+    }
+}
+
+/** Ánimo de hoy: 5 caritas, 1 toque; tocar otra lo corrige. */
+@Composable
+private fun TarjetaAnimo(valor: Int?, alAbrir: () -> Unit, alElegir: (Int) -> Unit) {
+    Card(onClick = alAbrir, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("ÁNIMO", style = MaterialTheme.typography.titleMedium)
+            Text("¿Cómo te sentís hoy?")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                CARITAS.forEachIndexed { i, carita ->
+                    BotonOpcion(carita, elegido = valor == i + 1, modifier = Modifier.weight(1f)) { alElegir(i + 1) }
+                }
+            }
+            if (valor != null) Text(NOMBRES_ANIMO[valor - 1], style = MaterialTheme.typography.bodyMedium)
+            Text("Ver calendario ›", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

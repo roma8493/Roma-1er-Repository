@@ -78,6 +78,25 @@ interface AguaDao {
 }
 
 @Dao
+interface AnimoDao {
+    @Query("SELECT * FROM animo")
+    suspend fun todos(): List<Animo>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(animo: Animo)
+
+    /** Volver a "sin dato". */
+    @Query("DELETE FROM animo WHERE fecha = :fecha")
+    suspend fun borrar(fecha: Long)
+
+    @Query("DELETE FROM animo")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(animos: List<Animo>)
+}
+
+@Dao
 interface ChecklistDao {
     @Query("SELECT * FROM checklist WHERE paraFecha = :paraFecha")
     suspend fun obtener(paraFecha: Long): Checklist?

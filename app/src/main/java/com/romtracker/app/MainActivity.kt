@@ -23,6 +23,7 @@ import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.ui.Ajustes
 import com.romtracker.app.ui.Bienvenida
 import com.romtracker.app.ui.Detalle
+import com.romtracker.app.ui.DetalleAnimo
 import com.romtracker.app.ui.Hoy
 import com.romtracker.app.ui.PantallaCopia
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ import java.time.LocalDate
 
 private const val PANTALLA_COPIA = "COPIA"
 private const val PANTALLA_AJUSTES = "AJUSTES"
+private const val PANTALLA_ANIMO = "ANIMO"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,6 +83,7 @@ class MainActivity : ComponentActivity() {
                             alVolver = { abierto = null },
                             alRestaurar = { restaurado -> perfil = restaurado; abierto = null },
                         )
+                        abierto == PANTALLA_ANIMO -> DetalleAnimo(db) { abierto = null }
                         else -> Detalle(db, perfil!!, abierto!!) { abierto = null }
                     }
                     }

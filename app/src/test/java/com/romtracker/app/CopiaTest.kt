@@ -82,4 +82,23 @@ class CopiaTest {
         val texto = CopiaJson.aTexto(copia).replace("\"COMIDA\"", "\"OTRO\"")
         invalida(texto)
     }
+
+    @Test fun idaYVueltaConservaAnimo() {
+        val conAnimo = copia.copy(animos = listOf(Animo(20005, 1), Animo(20006, 5)))
+        assertEquals(conAnimo, CopiaJson.deTexto(CopiaJson.aTexto(conAnimo)))
+    }
+
+    @Test fun copiaViejaSinAnimoSeRestauraConAnimoVacio() {
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(copia))
+        raiz.remove("animos")
+        raiz.put("version", 3)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals(copia, leida)
+        assertTrue(leida.animos.isEmpty())
+    }
+
+    @Test fun animoFueraDeRangoSeRechaza() {
+        val conAnimo = copia.copy(animos = listOf(Animo(20005, 3)))
+        invalida(CopiaJson.aTexto(conAnimo).replace("\"valor\": 3", "\"valor\": 9"))
+    }
 }
