@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface PerfilDao {
@@ -56,6 +57,10 @@ interface RegistroDao {
     /** Volver a "sin dato". */
     @Query("DELETE FROM registro WHERE habito = :habito AND fecha = :fecha")
     suspend fun borrar(habito: String, fecha: Long)
+
+    /** Borra todos los días de un hábito (al borrar un hábito propio). */
+    @Query("DELETE FROM registro WHERE habito = :habito")
+    suspend fun borrarDeHabito(habito: String)
 }
 
 @Dao
@@ -112,4 +117,26 @@ interface ChecklistDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(checklists: List<Checklist>)
+}
+
+@Dao
+interface HabitoPropioDao {
+    @Query("SELECT * FROM habito_propio ORDER BY id")
+    suspend fun todos(): List<HabitoPropio>
+
+    /** Devuelve el id nuevo. */
+    @Insert
+    suspend fun crear(habito: HabitoPropio): Long
+
+    @Update
+    suspend fun actualizar(habito: HabitoPropio)
+
+    @Query("DELETE FROM habito_propio WHERE id = :id")
+    suspend fun borrar(id: Long)
+
+    @Query("DELETE FROM habito_propio")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(habitos: List<HabitoPropio>)
 }

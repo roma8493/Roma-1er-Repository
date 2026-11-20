@@ -11,14 +11,15 @@ data class Copia(
     val checklists: List<Checklist>,
     val aguas: List<Agua> = emptyList(),
     val animos: List<Animo> = emptyList(),
+    val habitosPropios: List<HabitoPropio> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 4
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 5
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -56,6 +57,14 @@ object CopiaJson {
         raiz.put("animos", JSONArray().also { a ->
             c.animos.forEach { a.put(JSONObject().put("fecha", it.fecha).put("valor", it.valor)) }
         })
+        raiz.put("habitosPropios", JSONArray().also { a ->
+            c.habitosPropios.forEach {
+                a.put(
+                    JSONObject().put("id", it.id).put("nombre", it.nombre).put("claveAncla", it.claveAncla)
+                        .put("porQue", it.porQue).put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)
+                )
+            }
+        })
         return raiz.toString(2)
     }
 
@@ -84,9 +93,21 @@ object CopiaJson {
                 }
                 Habito(tipo, it.getLong("fechaInicio"))
             }
+            // Las copias anteriores a la versión 5 no traen "habitosPropios": se leen como lista vacía.
+            val propios = raiz.optJSONArray("habitosPropios")?.objetos()?.map {
+                val tipo = it.getString("tipo")
+                if (!TipoPropio.valido(tipo)) throw CopiaInvalida("La copia tiene un hábito propio con tipo desconocido.")
+                HabitoPropio(
+                    it.getLong("id"), it.getString("nombre"), it.getString("claveAncla"),
+                    it.getString("porQue"), tipo, it.getLong("fechaInicio"),
+                )
+            } ?: emptyList()
+            val clavesPropias = propios.map { claveRegistroPropio(it.id) }.toSet()
             val registros = raiz.getJSONArray("registros").objetos().map {
                 val h = it.getString("habito")
-                if (h != TipoHabito.GYM && h != TipoHabito.COMIDA) throw CopiaInvalida("La copia tiene un registro desconocido.")
+                if (h != TipoHabito.GYM && h != TipoHabito.COMIDA && h !in clavesPropias) {
+                    throw CopiaInvalida("La copia tiene un registro desconocido.")
+                }
                 Registro(h, it.getLong("fecha"), it.getBoolean("cumplido"))
             }
             val checklists = raiz.getJSONArray("checklists").objetos().map {
@@ -102,7 +123,7 @@ object CopiaJson {
                 if (v !in 1..5) throw CopiaInvalida("La copia tiene un ánimo fuera de rango.")
                 Animo(it.getLong("fecha"), v)
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos)
+            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

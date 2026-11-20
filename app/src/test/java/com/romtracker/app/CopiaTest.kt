@@ -101,4 +101,32 @@ class CopiaTest {
         val conAnimo = copia.copy(animos = listOf(Animo(20005, 3)))
         invalida(CopiaJson.aTexto(conAnimo).replace("\"valor\": 3", "\"valor\": 9"))
     }
+
+    private val propio = HabitoPropio(3, "No scrollear", "al acostarme", "Dormir mejor", TipoPropio.DEJAR, 20010)
+
+    @Test fun idaYVueltaConservaHabitosPropios() {
+        val conPropios = copia.copy(
+            habitosPropios = listOf(propio),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        assertEquals(conPropios, CopiaJson.deTexto(CopiaJson.aTexto(conPropios)))
+    }
+
+    @Test fun copiaViejaSinPropiosSeRestauraConListaVacia() {
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(copia))
+        raiz.remove("habitosPropios")
+        raiz.put("version", 4)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals(copia, leida)
+        assertTrue(leida.habitosPropios.isEmpty())
+    }
+
+    @Test fun tipoPropioDesconocidoSeRechaza() {
+        val texto = CopiaJson.aTexto(copia.copy(habitosPropios = listOf(propio))).replace("\"DEJAR\"", "\"XXX\"")
+        invalida(texto)
+    }
+
+    @Test fun registroDeHabitoPropioInexistenteSeRechaza() {
+        invalida(CopiaJson.aTexto(copia.copy(registros = copia.registros + Registro(claveRegistroPropio(99), 20010, true))))
+    }
 }

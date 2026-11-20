@@ -167,6 +167,6 @@
 - Criterios: (1) crear un hábito aparece como tarjeta en Hoy y persiste al reiniciar; (2) en "Quiero dejarlo" el botón de ✓ significa "no lo hice" y la racha cuenta esos días; (3) editar y borrar funcionan y borrar pide confirmación; (4) instalar encima de 0.3 no pierde datos (migración Room 4→5); (5) restaurar una copia 0.3 funciona.
 
 ### Tareas 0.4
-- [ ] T16: Datos y lógica — habilitar hábitos propios en Room (migración 4→5, nombre/ancla/por qué/tipo), registro Sí/No para hábitos propios, regla de ✓ según tipo, reutilizar fase/consistencia/racha, copia de seguridad v5, con tests. Verifica: Action en verde.
+- [x] T16: Datos y lógica — habilitar hábitos propios en Room (migración 4→5, nombre/ancla/por qué/tipo), registro Sí/No para hábitos propios, regla de ✓ según tipo, reutilizar fase/consistencia/racha, copia de seguridad v5, con tests. Verifica: Action en verde.
 - [ ] T17: UI — pantalla "Nuevo hábito" (nombre, tipo, ancla, por qué), tarjetas propias en Hoy y Detalle con calendario. Verifica en el celular.
 - [ ] T18: Gestión — editar y borrar (con confirmación) un hábito propio. Verifica en el celular.

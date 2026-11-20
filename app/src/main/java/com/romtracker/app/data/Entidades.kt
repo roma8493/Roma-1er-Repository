@@ -58,6 +58,32 @@ data class Animo(
     val valor: Int,
 )
 
+/**
+ * Hábito creado por el usuario (Sí/No por día). [tipo]: [TipoPropio.HACER] ("quiero hacerlo") o
+ * [TipoPropio.DEJAR] ("quiero dejarlo"). Sus días se guardan en la tabla `registro` con la clave
+ * [claveRegistroPropio]; allí `cumplido` ya es el ✓ (en DEJAR, ✓ = ese día no lo hice).
+ */
+@Entity(tableName = "habito_propio")
+data class HabitoPropio(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val nombre: String,
+    val claveAncla: String,
+    val porQue: String,
+    val tipo: String,
+    val fechaInicio: Long,
+)
+
+object TipoPropio {
+    const val HACER = "HACER"
+    const val DEJAR = "DEJAR"
+    fun valido(tipo: String) = tipo == HACER || tipo == DEJAR
+}
+
+const val PREFIJO_PROPIO = "PROPIO_"
+
+/** Valor de `registro.habito` para los días de un hábito propio. */
+fun claveRegistroPropio(id: Long) = "$PREFIJO_PROPIO$id"
+
 object TipoHabito {
     const val GYM = "GYM"
     const val COMIDA = "COMIDA"

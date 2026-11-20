@@ -9,8 +9,8 @@ import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class],
-    version = 4,
+    entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class],
+    version = 5,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -20,17 +20,28 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun checklistDao(): ChecklistDao
     abstract fun aguaDao(): AguaDao
     abstract fun animoDao(): AnimoDao
+    abstract fun habitoPropioDao(): HabitoPropioDao
 
     /** Lee todo para la copia de seguridad. Devuelve null si todavía no hay perfil. */
     suspend fun exportar(): Copia? = withTransaction {
         val perfil = perfilDao().obtener() ?: return@withTransaction null
-        Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos())
+        Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos())
     }
 
     /** Guarda los vasos de un día y crea el hábito Agua si es el primer registro (inicio = esa fecha). */
     suspend fun registrarAgua(fecha: Long, vasos: Int, meta: Int) = withTransaction {
         habitoDao().crear(Habito(TipoHabito.AGUA, fecha))
         aguaDao().guardar(Agua(fecha, vasos, meta))
+    }
+
+    /** Crea un hábito propio; su inicio es [hoy]. Devuelve su id. */
+    suspend fun crearPropio(nombre: String, claveAncla: String, porQue: String, tipo: String, hoy: Long): Long =
+        habitoPropioDao().crear(HabitoPropio(0, nombre.trim(), claveAncla.trim(), porQue.trim(), tipo, hoy))
+
+    /** Borra el hábito propio y todo su historial, en una sola transacción. */
+    suspend fun borrarPropio(id: Long) = withTransaction {
+        registroDao().borrarDeHabito(claveRegistroPropio(id))
+        habitoPropioDao().borrar(id)
     }
 
     /**
@@ -55,12 +66,14 @@ abstract class AppDatabase : RoomDatabase() {
         checklistDao().borrarTodo()
         aguaDao().borrarTodo()
         animoDao().borrarTodo()
+        habitoPropioDao().borrarTodo()
         perfilDao().guardar(copia.perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
         checklistDao().insertar(copia.checklists)
         aguaDao().insertar(copia.aguas)
         animoDao().insertar(copia.animos)
+        habitoPropioDao().insertar(copia.habitosPropios)
     }
 
     companion object {
@@ -93,11 +106,22 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 0.3 → 0.4: solo agrega la tabla habito_propio; no toca ninguna tabla con datos existentes. */
+        val MIGRACION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `habito_propio` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`nombre` TEXT NOT NULL, `claveAncla` TEXT NOT NULL, `porQue` TEXT NOT NULL, " +
+                        "`tipo` TEXT NOT NULL, `fechaInicio` INTEGER NOT NULL)"
+                )
+            }
+        }
+
         fun obtener(contexto: Context): AppDatabase =
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5).build().also { instancia = it }
             }
     }
 }
