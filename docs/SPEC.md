@@ -155,3 +155,18 @@
 - [x] T13: Agua — UI (tarjeta en Hoy con +1/−1, Detalle con calendario y vasos, meta en Ajustes). Verifica en el celular.
 - [x] T14: Ánimo — datos y UI (5 caritas en Hoy, mostrar en calendario, copia de seguridad). Verifica en el celular.
 - [x] T15: Cruce ánimo–hábitos (promedio ✓ vs no ✓, umbral de 14 días, textos neutros). Verifica en el celular con datos ficticios.
+
+## Versión 0.4 — Hábitos propios (aprobada 2026-11-20)
+- **Crear tarjetas de hábito** desde la app (botón "Nuevo hábito" en Hoy). Solo tipo Sí/No por día (sin contador).
+- **Dos tipos al crear**: "Quiero hacerlo" (✓ = lo hice) y "Quiero dejarlo" (✓ = ese día no lo hice). La fase cerebral (0–90, 90–270, 270+), barra, consistencia y racha son las mismas que Gym y Comida.
+- **Datos al crear**: nombre, clave ancla ("cuando pase X") y "por qué". Inicio del hábito = fecha de creación.
+- **Tarjeta y Detalle**: igual que Gym (1 toque en Hoy, calendario editable hoy y 7 días atrás, ancla y por qué).
+- **Gestión**: editar nombre, ancla y por qué; borrar definitivamente (con confirmación y aviso de que se pierde el historial). Sin archivar.
+- Gym, Comida y Agua siguen como están (no se tocan ni se convierten).
+- Copia de seguridad (versión 5) incluye los hábitos propios y sus registros; las copias 1–4 se siguen leyendo.
+- Criterios: (1) crear un hábito aparece como tarjeta en Hoy y persiste al reiniciar; (2) en "Quiero dejarlo" el botón de ✓ significa "no lo hice" y la racha cuenta esos días; (3) editar y borrar funcionan y borrar pide confirmación; (4) instalar encima de 0.3 no pierde datos (migración Room 4→5); (5) restaurar una copia 0.3 funciona.
+
+### Tareas 0.4
+- [ ] T16: Datos y lógica — habilitar hábitos propios en Room (migración 4→5, nombre/ancla/por qué/tipo), registro Sí/No para hábitos propios, regla de ✓ según tipo, reutilizar fase/consistencia/racha, copia de seguridad v5, con tests. Verifica: Action en verde.
+- [ ] T17: UI — pantalla "Nuevo hábito" (nombre, tipo, ancla, por qué), tarjetas propias en Hoy y Detalle con calendario. Verifica en el celular.
+- [ ] T18: Gestión — editar y borrar (con confirmación) un hábito propio. Verifica en el celular.
