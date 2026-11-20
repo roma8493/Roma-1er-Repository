@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,6 +30,20 @@ abstract class AppDatabase : RoomDatabase() {
     suspend fun registrarAgua(fecha: Long, vasos: Int, meta: Int) = withTransaction {
         habitoDao().crear(Habito(TipoHabito.AGUA, fecha))
         aguaDao().guardar(Agua(fecha, vasos, meta))
+    }
+
+    /**
+     * Guarda el perfil. Si cambió la meta de agua, la nueva rige desde hoy: se actualiza la meta
+     * del día de hoy (si ya tiene vasos) y los días anteriores conservan la suya.
+     */
+    suspend fun guardarPerfil(perfil: Perfil, hoy: Long) = withTransaction {
+        val anterior = perfilDao().obtener()
+        perfilDao().guardar(perfil)
+        if (anterior != null && anterior.metaAgua != perfil.metaAgua) {
+            aguaDao().todas().firstOrNull { it.fecha == hoy }?.let {
+                aguaDao().guardar(it.copy(meta = perfil.metaAgua))
+            }
+        }
     }
 
     /** Reemplaza TODO lo guardado por la copia, en una sola transacción: o entra todo o no cambia nada. */
@@ -59,11 +73,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 0.2.2 → 0.2.3: agrega la meta de agua al perfil (8 por defecto); no toca los datos existentes. */
+        val MIGRACION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `perfil` ADD COLUMN `metaAgua` INTEGER NOT NULL DEFAULT 8")
+            }
+        }
+
         fun obtener(contexto: Context): AppDatabase =
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3).build().also { instancia = it }
             }
     }
 }

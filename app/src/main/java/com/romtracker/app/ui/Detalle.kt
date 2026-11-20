@@ -36,17 +36,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.romtracker.app.data.Agua
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.Registros
+import com.romtracker.app.logic.ajustarVasos
 import com.romtracker.app.logic.consistencia
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.esEditable
 import com.romtracker.app.logic.estadoDeFase
 import com.romtracker.app.logic.rachaActual
+import com.romtracker.app.logic.registrosDeAgua
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -55,7 +58,7 @@ import java.util.Locale
 
 private val LOCALE_ES = Locale("es", "AR")
 
-/** Pantalla P3: detalle de un hábito (GYM o COMIDA) con calendario mensual. */
+/** Pantalla P3: detalle de un hábito (GYM, COMIDA o AGUA) con calendario mensual. */
 @Composable
 fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit) {
     BackHandler(onBack = alVolver)
@@ -63,17 +66,29 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     val hoy = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
     val esGym = tipo == TipoHabito.GYM
-    val titulo = if (esGym) "GYM" else "COMIDA"
+    val esAgua = tipo == TipoHabito.AGUA
+    val titulo = when (tipo) {
+        TipoHabito.GYM -> "GYM"
+        TipoHabito.AGUA -> "AGUA"
+        else -> "COMIDA"
+    }
 
     var inicio by remember { mutableStateOf<LocalDate?>(null) }
     var registros by remember { mutableStateOf<Registros>(emptyMap()) }
+    var aguas by remember { mutableStateOf<Map<LocalDate, Agua>>(emptyMap()) }
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
 
     suspend fun cargar() {
         val h = db.habitoDao().obtener(tipo) ?: return
         inicio = LocalDate.ofEpochDay(h.fechaInicio)
-        registros = db.registroDao().todos(tipo)
-            .associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
+        if (esAgua) {
+            val lista = db.aguaDao().todas()
+            aguas = lista.associateBy { LocalDate.ofEpochDay(it.fecha) }
+            registros = registrosDeAgua(lista)
+        } else {
+            registros = db.registroDao().todos(tipo)
+                .associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
+        }
     }
 
     LaunchedEffect(Unit) { cargar() }
@@ -82,6 +97,23 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
         scope.launch {
             if (valor == null) db.registroDao().borrar(tipo, fecha.toEpochDay())
             else db.registroDao().guardar(Registro(tipo, fecha.toEpochDay(), valor))
+            cargar()
+        }
+    }
+
+    /** Agua: suma o resta vasos a un día; el día nuevo usa la meta del perfil, el existente conserva la suya. */
+    fun cambiarVasos(fecha: LocalDate, delta: Int) {
+        scope.launch {
+            val actual = aguas[fecha]
+            val nuevos = ajustarVasos(actual?.vasos ?: 0, delta)
+            db.registrarAgua(fecha.toEpochDay(), nuevos, actual?.meta ?: perfil.metaAgua)
+            cargar()
+        }
+    }
+
+    fun borrarAgua(fecha: LocalDate) {
+        scope.launch {
+            db.aguaDao().borrar(fecha.toEpochDay())
             cargar()
         }
     }
@@ -169,25 +201,37 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                             Box(Modifier.weight(1f)) {
                                 if (n in 1..mes.lengthOfMonth()) {
                                     val fecha = mes.atDay(n)
+                                    val agua = aguas[fecha]
                                     CeldaDia(
                                         fecha = fecha,
                                         valor = registros[fecha],
                                         esHoy = fecha == hoy,
                                         editable = esEditable(fecha, ini, hoy),
                                         futuro = fecha.isAfter(hoy),
-                                        textoSi = if (esGym) "Fui" else "Sano",
-                                        textoNo = if (esGym) "No fui" else "Chatarra",
-                                        alElegir = { marcar(fecha, it) },
-                                        alBorrar = { marcar(fecha, null) },
+                                        // Agua: la celda muestra "vasos/meta" en vez de ✓/✗.
+                                        textoCelda = if (esAgua && agua != null) "${agua.vasos}/${agua.meta}" else null,
+                                        opciones = if (esAgua) listOf(
+                                            "+1 vaso" to { cambiarVasos(fecha, 1) },
+                                            "−1 vaso" to { cambiarVasos(fecha, -1) },
+                                            "Sin dato" to { borrarAgua(fecha) },
+                                        ) else listOf(
+                                            (if (esGym) "Fui" else "Sano") to { marcar(fecha, true) },
+                                            (if (esGym) "No fui" else "Chatarra") to { marcar(fecha, false) },
+                                            "Sin dato" to { marcar(fecha, null) },
+                                        ),
                                     )
                                 }
                             }
                         }
                     }
                 }
+                val leyenda = when {
+                    esAgua -> "Cada día muestra vasos/meta. Fondo marcado = llegaste a la meta · · sin dato. "
+                    esGym -> "✓ fui · ✗ no fui · · sin dato. "
+                    else -> "✓ sano · ✗ chatarra · · sin dato. "
+                }
                 Text(
-                    "✓ ${if (esGym) "fui" else "sano"} · ✗ ${if (esGym) "no fui" else "chatarra"} · · sin dato. " +
-                        "Podés completar hoy y los 7 días anteriores.",
+                    leyenda + "Podés completar hoy y los 7 días anteriores.",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -211,10 +255,8 @@ private fun CeldaDia(
     esHoy: Boolean,
     editable: Boolean,
     futuro: Boolean,
-    textoSi: String,
-    textoNo: String,
-    alElegir: (Boolean) -> Unit,
-    alBorrar: () -> Unit,
+    textoCelda: String?,
+    opciones: List<Pair<String, () -> Unit>>,
 ) {
     var menu by remember { mutableStateOf(false) }
     val colores = MaterialTheme.colorScheme
@@ -225,6 +267,7 @@ private fun CeldaDia(
     }
     val simbolo = when {
         futuro -> ""
+        textoCelda != null -> textoCelda
         valor == true -> "✓"
         valor == false -> "✗"
         else -> "·"
@@ -241,12 +284,15 @@ private fun CeldaDia(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("${fecha.dayOfMonth}", style = MaterialTheme.typography.labelSmall)
-            Text(simbolo, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                simbolo,
+                style = if (textoCelda != null) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodyMedium,
+            )
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text(textoSi) }, onClick = { menu = false; alElegir(true) })
-            DropdownMenuItem(text = { Text(textoNo) }, onClick = { menu = false; alElegir(false) })
-            DropdownMenuItem(text = { Text("Sin dato") }, onClick = { menu = false; alBorrar() })
+            opciones.forEach { (texto, accion) ->
+                DropdownMenuItem(text = { Text(texto) }, onClick = { menu = false; accion() })
+            }
         }
     }
 }

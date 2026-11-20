@@ -1,5 +1,6 @@
 package com.romtracker.app.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -11,6 +12,8 @@ data class Perfil(
     val horaSalidaMinutos: Int, // minutos desde medianoche
     val claveAncla: String,
     val porQue: String,
+    /** Meta diaria de vasos de agua. Rige para los días nuevos; cada día guarda la suya en [Agua.meta]. */
+    @ColumnInfo(defaultValue = "8") val metaAgua: Int = 8,
 )
 
 /** [tipo]: "GYM" o "COMIDA". */

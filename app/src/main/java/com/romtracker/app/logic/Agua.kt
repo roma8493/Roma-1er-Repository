@@ -17,7 +17,3 @@ fun ajustarVasos(actual: Int, delta: Int): Int = maxOf(0, actual + delta)
  */
 fun registrosDeAgua(aguas: List<Agua>): Registros =
     aguas.associate { LocalDate.ofEpochDay(it.fecha) to cumplidoAgua(it.vasos, it.meta) }
-
-/** Meta vigente: la del último día registrado, o 8 si todavía no hay ninguno. */
-fun metaActual(aguas: List<Agua>): Int =
-    aguas.maxByOrNull { it.fecha }?.meta ?: META_VASOS_POR_DEFECTO

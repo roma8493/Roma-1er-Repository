@@ -25,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Perfil
 
@@ -37,12 +38,14 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
     var nombre by rememberSaveable { mutableStateOf(perfil.nombre) }
     var ancla by rememberSaveable { mutableStateOf(perfil.claveAncla) }
     var porQue by rememberSaveable { mutableStateOf(perfil.porQue) }
+    var metaAgua by rememberSaveable { mutableStateOf(perfil.metaAgua.toString()) }
     val reloj = rememberTimePickerState(
         initialHour = perfil.horaSalidaMinutos / 60,
         initialMinute = perfil.horaSalidaMinutos % 60,
         is24Hour = true,
     )
-    val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank()
+    val metaValida = metaAgua.toIntOrNull()?.let { it in 1..30 } == true
+    val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank() && metaValida
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -78,6 +81,17 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
+        OutlinedTextField(
+            value = metaAgua,
+            onValueChange = { metaAgua = it.filter(Char::isDigit).take(2) },
+            label = { Text("Meta de vasos de agua por día (1 a 30)") },
+            supportingText = { Text("La nueva meta rige desde hoy; los días anteriores conservan la suya.") },
+            singleLine = true,
+            isError = !metaValida,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         Button(
             enabled = valido,
             onClick = {
@@ -87,6 +101,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
                         horaSalidaMinutos = reloj.hour * 60 + reloj.minute,
                         claveAncla = ancla.trim(),
                         porQue = porQue.trim(),
+                        metaAgua = metaAgua.toInt(),
                     )
                 )
             },

@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                             alVolver = { abierto = null },
                             alGuardar = { nuevo ->
                                 scope.launch {
-                                    db.perfilDao().guardar(nuevo)
+                                    db.guardarPerfil(nuevo, LocalDate.now().toEpochDay())
                                     perfil = nuevo
                                     abierto = null
                                 }

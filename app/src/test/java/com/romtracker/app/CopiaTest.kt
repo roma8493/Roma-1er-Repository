@@ -61,10 +61,17 @@ class CopiaTest {
         // Una copia 0.2 (versión 1) no trae "aguas".
         val raiz = org.json.JSONObject(CopiaJson.aTexto(copia))
         raiz.remove("aguas")
+        raiz.getJSONObject("perfil").remove("metaAgua")
         raiz.put("version", 1)
         val leida = CopiaJson.deTexto(raiz.toString())
         assertEquals(copia, leida)
         assertTrue(leida.aguas.isEmpty())
+        assertEquals(8, leida.perfil.metaAgua)
+    }
+
+    @Test fun idaYVueltaConservaLaMetaDeAgua() {
+        val conMeta = copia.copy(perfil = copia.perfil.copy(metaAgua = 10))
+        assertEquals(10, CopiaJson.deTexto(CopiaJson.aTexto(conMeta)).perfil.metaAgua)
     }
 
     @Test fun faltanCamposSeRechaza() {

@@ -35,6 +35,8 @@ import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.logic.Fase
+import com.romtracker.app.logic.ajustarVasos
+import com.romtracker.app.logic.cumplidoAgua
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estadoDeFase
 import kotlinx.coroutines.launch
@@ -47,9 +49,12 @@ private val LOCALE_ES = Locale("es", "AR")
 /** Estado de un hábito para pintar su tarjeta. [hoy]: null = sin dato. */
 private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
 
+/** Estado del agua. [dia] null = el hábito todavía no empezó (empieza con el primer vaso). */
+private data class AguaEstado(val dia: Int?, val vasos: Int, val meta: Int)
+
 /**
  * Pantalla P2 (Hoy): tarjetas Gym y Comida con registro en 1 toque (tocar el otro botón corrige),
- * y la checklist de la noche ("para mañana") + lo que se preparó anoche.
+ * la tarjeta Agua (+1 / −1 vaso) y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
 fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia: () -> Unit, alAbrirAjustes: () -> Unit) {
@@ -58,6 +63,7 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
 
     var gym by remember { mutableStateOf<TarjetaEstado?>(null) }
     var comida by remember { mutableStateOf<TarjetaEstado?>(null) }
+    var agua by remember { mutableStateOf<AguaEstado?>(null) }
     var anoche by remember { mutableStateOf<Checklist?>(null) }
     var paraManana by remember { mutableStateOf(Checklist(fecha.plusDays(1).toEpochDay())) }
 
@@ -68,8 +74,20 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
         return TarjetaEstado(diaDelHabito(LocalDate.ofEpochDay(habito.fechaInicio), fecha), registroHoy)
     }
 
+    suspend fun cargarAgua(): AguaEstado {
+        val habito = db.habitoDao().obtener(TipoHabito.AGUA)
+        val fila = db.aguaDao().todas().firstOrNull { it.fecha == fecha.toEpochDay() }
+        return AguaEstado(
+            dia = habito?.let { diaDelHabito(LocalDate.ofEpochDay(it.fechaInicio), fecha) },
+            vasos = fila?.vasos ?: 0,
+            // Si hoy ya tiene fila, esa meta; si no, la del perfil (Ajustes).
+            meta = fila?.meta ?: perfil.metaAgua,
+        )
+    }
+
     LaunchedEffect(Unit) {
         gym = cargarHabito(TipoHabito.GYM)
+        agua = cargarAgua()
         comida = cargarHabito(TipoHabito.COMIDA)
         anoche = db.checklistDao().obtener(fecha.toEpochDay())
         paraManana = db.checklistDao().obtener(fecha.plusDays(1).toEpochDay()) ?: paraManana
@@ -84,6 +102,17 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
             db.registroDao().guardar(Registro(tipo, fecha.toEpochDay(), cumplido))
             val nuevo = cargarHabito(tipo)
             if (tipo == TipoHabito.GYM) gym = nuevo else comida = nuevo
+        }
+    }
+
+    fun cambiarVasos(delta: Int) {
+        val actual = agua ?: return
+        val nuevos = ajustarVasos(actual.vasos, delta)
+        if (nuevos == actual.vasos) return
+        scope.launch {
+            // El primer registro crea el hábito Agua con inicio = hoy (no pisa el existente).
+            db.registrarAgua(fecha.toEpochDay(), nuevos, actual.meta)
+            agua = cargarAgua()
         }
     }
 
@@ -140,6 +169,12 @@ fun Hoy(db: AppDatabase, perfil: Perfil, alAbrir: (String) -> Unit, alAbrirCopia
             mensajeSi = "Bien ahí, sigamos así.",
             alAbrir = { alAbrir(TipoHabito.COMIDA) },
             alElegir = { registrar(TipoHabito.COMIDA, it) },
+        )
+
+        TarjetaAgua(
+            estado = agua,
+            alAbrir = { alAbrir(TipoHabito.AGUA) },
+            alCambiar = { cambiarVasos(it) },
         )
 
         if (anoche != null) {
@@ -222,6 +257,78 @@ private fun TarjetaHabito(
                 null -> Unit
             }
             if (estado != null) {
+                Text(
+                    "Ver calendario y detalle ›",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (Int) -> Unit) {
+    // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
+    Card(onClick = alAbrir, enabled = estado?.dia != null, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val dia = estado?.dia
+            if (dia == null) {
+                Text("AGUA", style = MaterialTheme.typography.titleMedium)
+            } else {
+                val e = estadoDeFase(dia)
+                val nombreFase = when (e.fase) {
+                    Fase.ADQUISICION -> "Adquisición"
+                    Fase.CONSOLIDACION -> "Consolidación"
+                    Fase.AUTOMATICO -> "Automático"
+                }
+                Text("AGUA · $nombreFase día $dia", style = MaterialTheme.typography.titleMedium)
+                if (e.metaSiguiente != null) {
+                    LinearProgressIndicator(
+                        progress = { (dia.toFloat() / e.metaSiguiente).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth().height(12.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    )
+                    Text("$dia/${e.metaSiguiente}", style = MaterialTheme.typography.bodySmall)
+                } else {
+                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            val vasos = estado?.vasos ?: 0
+            val meta = estado?.meta ?: 0
+            Text("¿Cuántos vasos llevás hoy?")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedButton(
+                    onClick = { alCambiar(-1) },
+                    enabled = estado != null && vasos > 0,
+                    modifier = Modifier.weight(1f).heightIn(min = 56.dp),
+                ) { Text("−1") }
+                Text(
+                    "$vasos / $meta",
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1.2f),
+                )
+                Button(
+                    onClick = { alCambiar(1) },
+                    enabled = estado != null,
+                    modifier = Modifier.weight(1f).heightIn(min = 56.dp),
+                ) { Text("+1") }
+            }
+            if (estado != null && vasos > 0) {
+                Text(
+                    if (cumplidoAgua(vasos, meta)) "¡Meta cumplida!" else "Te faltan ${meta - vasos}.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            if (dia != null) {
                 Text(
                     "Ver calendario y detalle ›",
                     style = MaterialTheme.typography.labelLarge,

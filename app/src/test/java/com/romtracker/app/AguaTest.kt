@@ -41,11 +41,6 @@ class AguaTest {
         assertEquals(false, r[dia(2)])
     }
 
-    @Test fun metaActualEsLaDelUltimoDiaOElDefecto() {
-        assertEquals(8, metaActual(emptyList()))
-        assertEquals(10, metaActual(listOf(agua(1, 8, meta = 8), agua(3, 4, meta = 10), agua(2, 8, meta = 9))))
-    }
-
     @Test fun consistenciaYRachaReutilizadas() {
         // Día 1 ✓, día 2 no ✓, día 3 ✓ (hoy). Racha = 1 porque el día 2 la cortó.
         val r = registrosDeAgua(listOf(agua(1, 8), agua(2, 5), agua(3, 9)))
