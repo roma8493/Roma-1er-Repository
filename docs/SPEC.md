@@ -152,6 +152,6 @@
 
 ### Tareas 0.3
 - [x] T12: Agua — datos y lógica (Room con migración, DAO, regla de ✓ por meta, fase/consistencia/racha reutilizadas, copia de seguridad) con tests. Verifica: Action en verde.
-- [ ] T13: Agua — UI (tarjeta en Hoy con +1/−1, Detalle con calendario y vasos, meta en Ajustes). Verifica en el celular.
+- [x] T13: Agua — UI (tarjeta en Hoy con +1/−1, Detalle con calendario y vasos, meta en Ajustes). Verifica en el celular.
 - [ ] T14: Ánimo — datos y UI (5 caritas en Hoy, mostrar en calendario, copia de seguridad). Verifica en el celular.
 - [ ] T15: Cruce ánimo–hábitos (promedio ✓ vs no ✓, umbral de 14 días, textos neutros). Verifica en el celular con datos ficticios.

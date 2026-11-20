@@ -6,7 +6,7 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.2.3 (versionCode 10; agua con UI: tarjeta en Hoy, Detalle y meta en Ajustes). Pendiente confirmar en el A34.
+- **Versión actual**: 0.2.3 (versionCode 10; agua con UI: tarjeta en Hoy, Detalle y meta en Ajustes). Confirmada en el A34 (T13 ok).
 - **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4 completa: T4–T9 hechas. MVP 0.1.0 cerrado.
 
 ## Última Actualización
@@ -61,4 +61,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- T13 implementada y subida (0.2.3). Siguiente: esperar Action en verde, hacer copia de seguridad en 0.2.2, instalar 0.2.3 encima y probar en el A34. Tras tu confirmación se marca T13 y sigue T14 (ánimo) en sesión limpia.
+- T13 confirmada en el A34 (2026-11-20). Siguiente: T14 (ánimo: datos + 5 caritas en Hoy + calendario + copia de seguridad).
