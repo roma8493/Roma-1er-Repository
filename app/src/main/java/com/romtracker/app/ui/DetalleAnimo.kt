@@ -29,7 +29,13 @@ import com.romtracker.app.data.Animo
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.logic.CARITAS
 import com.romtracker.app.logic.NOMBRES_ANIMO
+import com.romtracker.app.logic.Registros
 import com.romtracker.app.logic.animoEditable
+import com.romtracker.app.logic.cruceAnimo
+import com.romtracker.app.logic.diasFaltanParaCruce
+import com.romtracker.app.logic.registrosDeAgua
+import com.romtracker.app.logic.textoCruce
+import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.logic.caritaDe
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -47,10 +53,18 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
     val hoy = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
     var animos by remember { mutableStateOf<Map<LocalDate, Int>>(emptyMap()) }
+    var registros by remember { mutableStateOf<List<Pair<String, Registros>>>(emptyList()) }
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
 
     suspend fun cargar() {
         animos = db.animoDao().todos().associate { LocalDate.ofEpochDay(it.fecha) to it.valor }
+        fun deHabito(lista: List<com.romtracker.app.data.Registro>): Registros =
+            lista.associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
+        registros = listOf(
+            "Gym" to deHabito(db.registroDao().todos(TipoHabito.GYM)),
+            "Comida" to deHabito(db.registroDao().todos(TipoHabito.COMIDA)),
+            "Agua" to registrosDeAgua(db.aguaDao().todas()),
+        )
     }
 
     LaunchedEffect(Unit) { cargar() }
@@ -127,6 +141,28 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
                     "Una carita por día · · sin dato. Podés completar hoy y los 7 días anteriores.",
                     style = MaterialTheme.typography.bodySmall,
                 )
+            }
+        }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Ánimo y hábitos", style = MaterialTheme.typography.titleMedium)
+                val faltan = diasFaltanParaCruce(animos)
+                if (faltan > 0) {
+                    Text(
+                        "Con 14 días de ánimo registrado vas a ver cómo se relaciona con tus hábitos. " +
+                            "Llevás ${animos.size}; faltan $faltan.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    registros.forEach { (nombre, regs) ->
+                        Text(nombre, style = MaterialTheme.typography.titleSmall)
+                        Text(textoCruce(cruceAnimo(animos, regs)), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Text(
+                        "Es solo una asociación en tus datos; no dice qué causa qué.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }
