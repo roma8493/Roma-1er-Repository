@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+
 package com.romtracker.app.ui
 
 import androidx.compose.foundation.background
