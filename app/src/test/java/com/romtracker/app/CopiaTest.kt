@@ -129,4 +129,32 @@ class CopiaTest {
     @Test fun registroDeHabitoPropioInexistenteSeRechaza() {
         invalida(CopiaJson.aTexto(copia.copy(registros = copia.registros + Registro(claveRegistroPropio(99), 20010, true))))
     }
+
+    @Test fun idaYVueltaConservaChecklistEditable() {
+        val conItems = copia.copy(
+            checklistItems = listOf(ChecklistItem(1, "Bolso del gym listo", 1), ChecklistItem(7, "Agua en la mochila", 2)),
+            checklistMarcas = listOf(ChecklistMarca(20002, 1, true), ChecklistMarca(20002, 7, false)),
+        )
+        assertEquals(conItems, CopiaJson.deTexto(CopiaJson.aTexto(conItems)))
+    }
+
+    @Test fun copiaViejaSinChecklistEditableSiembraLosTresItemsYSusMarcas() {
+        // Copia versión 5: sin "checklistItems" ni "checklistMarcas".
+        val texto = CopiaJson.aTexto(copia)
+            .let { org.json.JSONObject(it).apply { remove("checklistItems"); remove("checklistMarcas"); put("version", 5) }.toString() }
+        val leida = CopiaJson.deTexto(texto)
+        assertEquals(listOf(1L, 2L, 3L), leida.checklistItems.map { it.id })
+        assertEquals(
+            listOf(ChecklistMarca(20002, 1, true), ChecklistMarca(20002, 2, false), ChecklistMarca(20002, 3, true)),
+            leida.checklistMarcas,
+        )
+    }
+
+    @Test fun marcaDeItemInexistenteSeRechaza() {
+        val mala = copia.copy(
+            checklistItems = listOf(ChecklistItem(1, "Uno", 1)),
+            checklistMarcas = listOf(ChecklistMarca(20002, 99, true)),
+        )
+        assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
+    }
 }

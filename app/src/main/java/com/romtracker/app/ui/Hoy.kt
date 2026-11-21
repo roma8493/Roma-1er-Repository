@@ -31,7 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Animo
 import com.romtracker.app.data.AppDatabase
-import com.romtracker.app.data.Checklist
+import com.romtracker.app.data.ChecklistItem
+import com.romtracker.app.data.ChecklistMarca
 import com.romtracker.app.data.HabitoPropio
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.Registro
@@ -44,6 +45,7 @@ import com.romtracker.app.logic.NOMBRES_ANIMO
 import com.romtracker.app.logic.ajustarVasos
 import com.romtracker.app.logic.cumplidoAgua
 import com.romtracker.app.logic.diaDelHabito
+import com.romtracker.app.logic.estaHecho
 import com.romtracker.app.logic.estadoDeFase
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -81,8 +83,10 @@ fun Hoy(
     var animo by remember { mutableStateOf<Int?>(null) }
     // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
     var propios by remember { mutableStateOf<List<Pair<HabitoPropio, TarjetaEstado>>>(emptyList()) }
-    var anoche by remember { mutableStateOf<Checklist?>(null) }
-    var paraManana by remember { mutableStateOf(Checklist(fecha.plusDays(1).toEpochDay())) }
+    // Checklist editable: ítems actuales y marcas de anoche (para hoy) y de esta noche (para mañana).
+    var itemsChecklist by remember { mutableStateOf<List<ChecklistItem>>(emptyList()) }
+    var anoche by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
+    var paraManana by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
 
     suspend fun cargarHabito(tipo: String): TarjetaEstado? {
         val habito = db.habitoDao().obtener(tipo) ?: return null
@@ -122,8 +126,9 @@ fun Hoy(
         agua = cargarAgua()
         comida = cargarHabito(TipoHabito.COMIDA)
         animo = db.animoDao().todos().firstOrNull { it.fecha == fecha.toEpochDay() }?.valor
-        anoche = db.checklistDao().obtener(fecha.toEpochDay())
-        paraManana = db.checklistDao().obtener(fecha.plusDays(1).toEpochDay()) ?: paraManana
+        itemsChecklist = db.checklistItemDao().todos()
+        anoche = db.checklistMarcaDao().deDia(fecha.toEpochDay())
+        paraManana = db.checklistMarcaDao().deDia(fecha.plusDays(1).toEpochDay())
     }
 
     fun registrar(tipo: String, cumplido: Boolean) {
@@ -154,9 +159,10 @@ fun Hoy(
         scope.launch { db.animoDao().guardar(Animo(fecha.toEpochDay(), valor)) }
     }
 
-    fun guardarChecklist(nueva: Checklist) {
-        paraManana = nueva
-        scope.launch { db.checklistDao().guardar(nueva) }
+    fun marcarChecklist(itemId: Long, hecho: Boolean) {
+        val marca = ChecklistMarca(fecha.plusDays(1).toEpochDay(), itemId, hecho)
+        paraManana = paraManana.filter { it.itemId != itemId } + marca
+        scope.launch { db.checklistMarcaDao().guardar(marca) }
     }
 
     Column(
@@ -242,14 +248,11 @@ fun Hoy(
             )
         }
 
-        if (anoche != null) {
-            val a = anoche!!
+        if (anoche.isNotEmpty()) {
             TarjetaRom(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Lo que preparaste anoche", style = MaterialTheme.typography.titleMedium)
-                    FilaCheck("Bolso del gym listo", a.bolso, null)
-                    FilaCheck("Comida preparada", a.comida, null)
-                    FilaCheck("Decidí a qué hora voy", a.hora, null)
+                    itemsChecklist.forEach { FilaCheck(it.texto, estaHecho(anoche, it.id), null) }
                 }
             }
         }
@@ -257,14 +260,8 @@ fun Hoy(
         TarjetaRom(modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Para mañana (noche)", style = MaterialTheme.typography.titleMedium)
-                FilaCheck("Bolso del gym listo", paraManana.bolso) {
-                    guardarChecklist(paraManana.copy(bolso = it))
-                }
-                FilaCheck("Comida preparada", paraManana.comida) {
-                    guardarChecklist(paraManana.copy(comida = it))
-                }
-                FilaCheck("Decidí a qué hora voy", paraManana.hora) {
-                    guardarChecklist(paraManana.copy(hora = it))
+                itemsChecklist.forEach { item ->
+                    FilaCheck(item.texto, estaHecho(paraManana, item.id)) { marcarChecklist(item.id, it) }
                 }
             }
         }

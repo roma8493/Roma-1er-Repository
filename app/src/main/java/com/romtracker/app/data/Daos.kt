@@ -120,6 +120,50 @@ interface ChecklistDao {
 }
 
 @Dao
+interface ChecklistItemDao {
+    @Query("SELECT * FROM checklist_item ORDER BY orden, id")
+    suspend fun todos(): List<ChecklistItem>
+
+    /** Devuelve el id nuevo. */
+    @Insert
+    suspend fun crear(item: ChecklistItem): Long
+
+    @Query("UPDATE checklist_item SET texto = :texto WHERE id = :id")
+    suspend fun renombrar(id: Long, texto: String)
+
+    @Query("DELETE FROM checklist_item WHERE id = :id")
+    suspend fun borrar(id: Long)
+
+    @Query("DELETE FROM checklist_item")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(items: List<ChecklistItem>)
+}
+
+@Dao
+interface ChecklistMarcaDao {
+    @Query("SELECT * FROM checklist_marca WHERE paraFecha = :paraFecha")
+    suspend fun deDia(paraFecha: Long): List<ChecklistMarca>
+
+    @Query("SELECT * FROM checklist_marca")
+    suspend fun todas(): List<ChecklistMarca>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(marca: ChecklistMarca)
+
+    /** Al borrar un ítem se borran también sus marcas. */
+    @Query("DELETE FROM checklist_marca WHERE itemId = :itemId")
+    suspend fun borrarDeItem(itemId: Long)
+
+    @Query("DELETE FROM checklist_marca")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(marcas: List<ChecklistMarca>)
+}
+
+@Dao
 interface HabitoPropioDao {
     @Query("SELECT * FROM habito_propio ORDER BY id")
     suspend fun todos(): List<HabitoPropio>

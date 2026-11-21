@@ -40,7 +40,9 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 private val LOCALE_ES = Locale("es", "AR")
-private const val DIAS_VISIBLES = 5
+private const val DIAS_VISIBLES = 7
+/** Ancho de cada columna de día: 7 columnas + nombre deben entrar en el A34 sin scroll horizontal. */
+private val ANCHO_DIA = 36.dp
 
 /** Una celda del cuadro: texto (vacío = sin dato) y su color. */
 private data class Celda(val texto: String = "", val color: Color = Color.Unspecified)
@@ -131,7 +133,7 @@ fun Resumen(
         }
 
         TarjetaRom(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
                 // Encabezado con los días
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.weight(1f))
@@ -140,7 +142,7 @@ fun Resumen(
                             .take(3).uppercase()
                         Text(
                             "$nombre\n${d.dayOfMonth}",
-                            modifier = Modifier.width(44.dp),
+                            modifier = Modifier.width(ANCHO_DIA),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.labelSmall,
                             color = if (d == hoy) Paleta.Acento else Paleta.TextoSecundario,
@@ -172,7 +174,7 @@ fun Resumen(
                             )
                             dias.forEach { d ->
                                 val c = fila.celda(d)
-                                Box(Modifier.width(44.dp), contentAlignment = Alignment.Center) {
+                                Box(Modifier.width(ANCHO_DIA), contentAlignment = Alignment.Center) {
                                     Text(
                                         c.texto,
                                         color = c.color,

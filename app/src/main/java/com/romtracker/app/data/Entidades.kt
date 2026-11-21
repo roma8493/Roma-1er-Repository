@@ -40,6 +40,22 @@ data class Checklist(
     val hora: Boolean = false,
 )
 
+/** Un ítem de la checklist nocturna (editable: máximo 6, mínimo 1). [orden] define cómo se muestran. */
+@Entity(tableName = "checklist_item")
+data class ChecklistItem(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val texto: String,
+    val orden: Int,
+)
+
+/** Marca de un ítem para un día: [paraFecha] es el día para el que se prepara. Sin fila = no hecho. */
+@Entity(tableName = "checklist_marca", primaryKeys = ["paraFecha", "itemId"])
+data class ChecklistMarca(
+    val paraFecha: Long,
+    val itemId: Long,
+    val hecho: Boolean,
+)
+
 /**
  * Vasos de agua de un día y la meta que regía ESE día (así cambiar la meta no reinterpreta el pasado).
  * Día ✓ = vasos >= meta; menos = "no fui"; sin fila = "sin dato".

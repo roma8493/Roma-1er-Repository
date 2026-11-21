@@ -1,5 +1,8 @@
 package com.romtracker.app.data
 
+import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
+import com.romtracker.app.logic.itemsPorDefecto
+import com.romtracker.app.logic.marcasDeChecklistVieja
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -12,14 +15,16 @@ data class Copia(
     val aguas: List<Agua> = emptyList(),
     val animos: List<Animo> = emptyList(),
     val habitosPropios: List<HabitoPropio> = emptyList(),
+    val checklistItems: List<ChecklistItem> = emptyList(),
+    val checklistMarcas: List<ChecklistMarca> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 5
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 6
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -63,6 +68,14 @@ object CopiaJson {
                     JSONObject().put("id", it.id).put("nombre", it.nombre).put("claveAncla", it.claveAncla)
                         .put("porQue", it.porQue).put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)
                 )
+            }
+        })
+        raiz.put("checklistItems", JSONArray().also { a ->
+            c.checklistItems.forEach { a.put(JSONObject().put("id", it.id).put("texto", it.texto).put("orden", it.orden)) }
+        })
+        raiz.put("checklistMarcas", JSONArray().also { a ->
+            c.checklistMarcas.forEach {
+                a.put(JSONObject().put("paraFecha", it.paraFecha).put("itemId", it.itemId).put("hecho", it.hecho))
             }
         })
         return raiz.toString(2)
@@ -123,7 +136,20 @@ object CopiaJson {
                 if (v !in 1..5) throw CopiaInvalida("La copia tiene un ánimo fuera de rango.")
                 Animo(it.getLong("fecha"), v)
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios)
+            // Las copias anteriores a la versión 6 no traen la checklist editable: se siembran los 3 ítems de
+            // siempre y sus marcas salen de las 3 casillas viejas.
+            val itemsJson = raiz.optJSONArray("checklistItems")
+            val items = itemsJson?.objetos()?.map {
+                ChecklistItem(it.getLong("id"), it.getString("texto"), it.getInt("orden"))
+            } ?: itemsPorDefecto()
+            if (items.size > MAX_ITEMS_CHECKLIST) throw CopiaInvalida("La copia tiene demasiados ítems de checklist.")
+            val idsItems = items.map { it.id }.toSet()
+            val marcas = raiz.optJSONArray("checklistMarcas")?.objetos()?.map {
+                val id = it.getLong("itemId")
+                if (id !in idsItems) throw CopiaInvalida("La copia tiene una marca de checklist desconocida.")
+                ChecklistMarca(it.getLong("paraFecha"), id, it.getBoolean("hecho"))
+            } ?: if (itemsJson == null) checklists.flatMap { marcasDeChecklistVieja(it) } else emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

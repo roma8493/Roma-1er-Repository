@@ -7,10 +7,16 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.romtracker.app.logic.ITEMS_POR_DEFECTO
+import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
+import com.romtracker.app.logic.limpiarTextoItem
+import com.romtracker.app.logic.puedeAgregarItem
+import com.romtracker.app.logic.puedeBorrarItem
 
 @Database(
-    entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class],
-    version = 5,
+    entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
+        ChecklistItem::class, ChecklistMarca::class],
+    version = 6,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -21,11 +27,14 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun aguaDao(): AguaDao
     abstract fun animoDao(): AnimoDao
     abstract fun habitoPropioDao(): HabitoPropioDao
+    abstract fun checklistItemDao(): ChecklistItemDao
+    abstract fun checklistMarcaDao(): ChecklistMarcaDao
 
     /** Lee todo para la copia de seguridad. Devuelve null si todavía no hay perfil. */
     suspend fun exportar(): Copia? = withTransaction {
         val perfil = perfilDao().obtener() ?: return@withTransaction null
-        Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos())
+        Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos(),
+            checklistItemDao().todos(), checklistMarcaDao().todas())
     }
 
     /** Guarda los vasos de un día y crea el hábito Agua si es el primer registro (inicio = esa fecha). */
@@ -42,6 +51,31 @@ abstract class AppDatabase : RoomDatabase() {
     suspend fun borrarPropio(id: Long) = withTransaction {
         registroDao().borrarDeHabito(claveRegistroPropio(id))
         habitoPropioDao().borrar(id)
+    }
+
+    /** Agrega un ítem al final de la checklist. Devuelve false si ya hay [MAX_ITEMS_CHECKLIST] o el texto está vacío. */
+    suspend fun agregarItemChecklist(texto: String): Boolean = withTransaction {
+        val items = checklistItemDao().todos()
+        val limpio = limpiarTextoItem(texto)
+        if (!puedeAgregarItem(items.size) || limpio.isEmpty()) return@withTransaction false
+        checklistItemDao().crear(ChecklistItem(0, limpio, (items.maxOfOrNull { it.orden } ?: 0) + 1))
+        true
+    }
+
+    /** Cambia el texto de un ítem. Devuelve false si el texto queda vacío. */
+    suspend fun renombrarItemChecklist(id: Long, texto: String): Boolean {
+        val limpio = limpiarTextoItem(texto)
+        if (limpio.isEmpty()) return false
+        checklistItemDao().renombrar(id, limpio)
+        return true
+    }
+
+    /** Borra un ítem y sus marcas. Devuelve false si es el último (siempre queda al menos uno). */
+    suspend fun borrarItemChecklist(id: Long): Boolean = withTransaction {
+        if (!puedeBorrarItem(checklistItemDao().todos().size)) return@withTransaction false
+        checklistMarcaDao().borrarDeItem(id)
+        checklistItemDao().borrar(id)
+        true
     }
 
     /**
@@ -67,6 +101,8 @@ abstract class AppDatabase : RoomDatabase() {
         aguaDao().borrarTodo()
         animoDao().borrarTodo()
         habitoPropioDao().borrarTodo()
+        checklistItemDao().borrarTodo()
+        checklistMarcaDao().borrarTodo()
         perfilDao().guardar(copia.perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
@@ -74,6 +110,8 @@ abstract class AppDatabase : RoomDatabase() {
         aguaDao().insertar(copia.aguas)
         animoDao().insertar(copia.animos)
         habitoPropioDao().insertar(copia.habitosPropios)
+        checklistItemDao().insertar(copia.checklistItems)
+        checklistMarcaDao().insertar(copia.checklistMarcas)
     }
 
     companion object {
@@ -117,11 +155,38 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * 0.6 → 0.7: crea la checklist editable, siembra los 3 ítems de siempre (ids 1, 2, 3) y copia las marcas
+         * de la tabla `checklist` vieja, que NO se toca. Los ítems quedan con id fijo para que las marcas
+         * copiadas apunten a ellos.
+         */
+        val MIGRACION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `checklist_item` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`texto` TEXT NOT NULL, `orden` INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `checklist_marca` (`paraFecha` INTEGER NOT NULL, " +
+                        "`itemId` INTEGER NOT NULL, `hecho` INTEGER NOT NULL, PRIMARY KEY(`paraFecha`, `itemId`))"
+                )
+                ITEMS_POR_DEFECTO.forEach { (id, texto, orden) ->
+                    db.execSQL(
+                        "INSERT INTO `checklist_item` (`id`, `texto`, `orden`) VALUES (?, ?, ?)",
+                        arrayOf<Any>(id, texto, orden),
+                    )
+                }
+                db.execSQL("INSERT INTO `checklist_marca` SELECT `paraFecha`, 1, `bolso` FROM `checklist`")
+                db.execSQL("INSERT INTO `checklist_marca` SELECT `paraFecha`, 2, `comida` FROM `checklist`")
+                db.execSQL("INSERT INTO `checklist_marca` SELECT `paraFecha`, 3, `hora` FROM `checklist`")
+            }
+        }
+
         fun obtener(contexto: Context): AppDatabase =
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6).build().also { instancia = it }
             }
     }
 }
