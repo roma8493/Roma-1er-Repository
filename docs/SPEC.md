@@ -170,3 +170,20 @@
 - [x] T16: Datos y lógica — habilitar hábitos propios en Room (migración 4→5, nombre/ancla/por qué/tipo), registro Sí/No para hábitos propios, regla de ✓ según tipo, reutilizar fase/consistencia/racha, copia de seguridad v5, con tests. Verifica: Action en verde.
 - [x] T17: UI — pantalla "Nuevo hábito" (nombre, tipo, ancla, por qué), tarjetas propias en Hoy y Detalle con calendario. Verifica en el celular.
 - [x] T18: Gestión — editar y borrar (con confirmación) un hábito propio. Verifica en el celular.
+
+## Versión 0.5 — Rediseño estético premium (aprobada 2026-11-21)
+- **Solo estética**: la lógica, los datos, la base de datos y la copia de seguridad NO cambian (sin migración Room). Sin funciones nuevas.
+- **Estilo**: sobrio, inspirado en las apps de iPhone (tipo Apple Salud), implementado nativo en Android con Jetpack Compose. Nada específico de iOS.
+- **Tema**: solo claro (no sigue el modo oscuro del celular). Fondo gris muy claro, tarjetas blancas con esquinas muy redondeadas (~20 dp) y sombra suave, mucho aire entre elementos.
+- **Colores**: neutros grises + un único color de acento azul sobrio; verde/ámbar/rojo suave solo para ✓/estado. Contraste de texto alto (el usuario está agotado y usa el celular de noche).
+- **Tipografía**: fuente del sistema (sin dependencias nuevas), jerarquía clara: título grande en negrita, subtítulos medianos, texto secundario en gris; números grandes en las tarjetas.
+- **Botones y controles**: botones grandes y redondeados (alto ≥ 48 dp), barra de progreso fina y redondeada, sin bordes duros.
+- **Look estático**: sin animaciones nuevas.
+- **Orden de pantallas**: (1) tema central + Hoy; (2) Detalle de hábito y Detalle de ánimo; (3) Bienvenida, Nuevo hábito, Ajustes y Copia.
+- **Fuera de alcance**: modo oscuro, animaciones, íconos personalizados, fuentes descargadas, cambiar textos o flujos.
+- Criterios: (1) todas las pantallas usan el mismo tema (colores, esquinas, tipografía) desde un único archivo; (2) nada se corta ni se solapa en el A34 (incluida la barra de estado); (3) todo funciona igual que en 0.4.1 (registrar, editar, borrar, copia); (4) instalar encima de 0.4.1 no pierde datos; (5) el usuario confirma que "se ve premium".
+
+### Tareas 0.5
+- [ ] T19: Tema central (`ui/Tema.kt`: colores, formas, tipografía, fondo claro) aplicado en `MainActivity.kt` + rediseño de Hoy (tarjetas Gym/Comida/Agua/Ánimo/propios y checklist). Versión 0.5.0. Verifica en el celular.
+- [ ] T20: Rediseño de Detalle de hábito (calendario, barra de fase, estadísticas) y Detalle de ánimo. Versión 0.5.1. Verifica en el celular.
+- [ ] T21: Rediseño de Bienvenida, Nuevo hábito, Ajustes y Copia + diálogos. Versión 0.5.2. Verifica en el celular.
