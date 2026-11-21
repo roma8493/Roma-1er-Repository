@@ -70,6 +70,7 @@ fun Hoy(
     alAbrirCopia: () -> Unit,
     alAbrirAjustes: () -> Unit,
     alNuevoHabito: () -> Unit,
+    alAbrirResumen: () -> Unit,
 ) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
@@ -183,6 +184,7 @@ fun Hoy(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = alAbrirResumen) { Text("Resumen") }
             TextButton(onClick = alAbrirAjustes) { Text("Ajustes") }
             TextButton(onClick = alAbrirCopia) { Text("Copia") }
             TextButton(onClick = alNuevoHabito) { Text("Nuevo hábito") }

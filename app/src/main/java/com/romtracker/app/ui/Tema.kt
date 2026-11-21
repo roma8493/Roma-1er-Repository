@@ -52,6 +52,7 @@ object Paleta {
     val Texto = Color(0xFF1F1B16)        // contraste alto
     val TextoSecundario = Color(0xFF5F5A52)
     val Titulo = Color(0xFF7A5A12)       // dorado oliva de los títulos de tarjeta
+    val Tenue = Color(0xFF9A9183)        // ✕ y datos de poca importancia
     val Acento = Color(0xFF4C6B43)       // verde oliva (botones, barras)
     val SobreAcento = Color(0xFFFFFFFF)
     val Pista = Color(0xFFD9D5CC)        // fondo de barras y bordes suaves
