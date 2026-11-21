@@ -1,19 +1,19 @@
 package com.romtracker.app.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -162,8 +162,8 @@ fun Hoy(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         val diaSemana = fecha.dayOfWeek.getDisplayName(TextStyle.SHORT, LOCALE_ES)
             .replaceFirstChar { it.uppercase() }
@@ -173,13 +173,16 @@ fun Hoy(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "Hola ${perfil.nombre} · $diaSemana ${fecha.dayOfMonth} $mes",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "$diaSemana ${fecha.dayOfMonth} $mes".uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Paleta.TextoSecundario,
+                )
+                Text("Hola ${perfil.nombre}", style = MaterialTheme.typography.titleLarge)
+            }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextButton(onClick = alAbrirAjustes) { Text("Ajustes") }
             TextButton(onClick = alAbrirCopia) { Text("Copia") }
             TextButton(onClick = alNuevoHabito) { Text("Nuevo hábito") }
@@ -239,9 +242,9 @@ fun Hoy(
 
         if (anoche != null) {
             val a = anoche!!
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Lo que preparaste anoche:", style = MaterialTheme.typography.titleMedium)
+            TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Lo que preparaste anoche", style = MaterialTheme.typography.titleMedium)
                     FilaCheck("Bolso del gym listo", a.bolso, null)
                     FilaCheck("Comida preparada", a.comida, null)
                     FilaCheck("Decidí a qué hora voy", a.hora, null)
@@ -249,9 +252,9 @@ fun Hoy(
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp)) {
-                Text("Para mañana (noche):", style = MaterialTheme.typography.titleMedium)
+        TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Para mañana (noche)", style = MaterialTheme.typography.titleMedium)
                 FilaCheck("Bolso del gym listo", paraManana.bolso) {
                     guardarChecklist(paraManana.copy(bolso = it))
                 }
@@ -279,8 +282,8 @@ private fun TarjetaHabito(
     alElegir: (Boolean) -> Unit,
 ) {
     // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
-    Card(onClick = alAbrir, enabled = estado != null, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    TarjetaRom(alTocar = alAbrir, habilitada = estado != null, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (estado == null) {
                 // Solo la comida puede no existir todavía: empieza con el primer registro.
                 Text(titulo, style = MaterialTheme.typography.titleMedium)
@@ -291,29 +294,25 @@ private fun TarjetaHabito(
                     Fase.CONSOLIDACION -> "Consolidación"
                     Fase.AUTOMATICO -> "Automático"
                 }
-                Text("$titulo · $nombreFase día ${estado.dia}", style = MaterialTheme.typography.titleMedium)
+                Text(titulo, style = MaterialTheme.typography.titleMedium)
+                Text("$nombreFase · día ${estado.dia}", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 if (e.metaSiguiente != null) {
                     val avance = estado.dia.toFloat() / e.metaSiguiente
-                    LinearProgressIndicator(
-                        progress = { avance.coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth().height(12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    )
-                    Text("${estado.dia}/${e.metaSiguiente}", style = MaterialTheme.typography.bodySmall)
+                    BarraRom(avance)
+                    Text("${estado.dia}/${e.metaSiguiente}", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 } else {
-                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium)
+                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
                 }
             }
-            Text(pregunta)
+            Text(pregunta, style = MaterialTheme.typography.bodyLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 val elegido = estado?.hoy
                 BotonOpcion(textoSi, elegido == true, Modifier.weight(1f)) { alElegir(true) }
                 BotonOpcion(textoNo, elegido == false, Modifier.weight(1f)) { alElegir(false) }
             }
             when (estado?.hoy) {
-                true -> Text(mensajeSi, style = MaterialTheme.typography.bodyMedium)
-                false -> Text(mensajeNo, style = MaterialTheme.typography.bodyMedium)
+                true -> Text(mensajeSi, style = MaterialTheme.typography.bodyMedium, color = Paleta.Verde)
+                false -> Text(mensajeNo, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
                 null -> Unit
             }
             if (estado != null) {
@@ -332,8 +331,8 @@ private fun TarjetaHabito(
 @Composable
 private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (Int) -> Unit) {
     // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
-    Card(onClick = alAbrir, enabled = estado?.dia != null, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    TarjetaRom(alTocar = alAbrir, habilitada = estado?.dia != null, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val dia = estado?.dia
             if (dia == null) {
                 Text("AGUA", style = MaterialTheme.typography.titleMedium)
@@ -344,22 +343,18 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
                     Fase.CONSOLIDACION -> "Consolidación"
                     Fase.AUTOMATICO -> "Automático"
                 }
-                Text("AGUA · $nombreFase día $dia", style = MaterialTheme.typography.titleMedium)
+                Text("AGUA", style = MaterialTheme.typography.titleMedium)
+                Text("$nombreFase · día $dia", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 if (e.metaSiguiente != null) {
-                    LinearProgressIndicator(
-                        progress = { (dia.toFloat() / e.metaSiguiente).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth().height(12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    )
-                    Text("$dia/${e.metaSiguiente}", style = MaterialTheme.typography.bodySmall)
+                    BarraRom(dia.toFloat() / e.metaSiguiente)
+                    Text("$dia/${e.metaSiguiente}", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 } else {
-                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium)
+                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
                 }
             }
             val vasos = estado?.vasos ?: 0
             val meta = estado?.meta ?: 0
-            Text("¿Cuántos vasos llevás hoy?")
+            Text("¿Cuántos vasos llevás hoy?", style = MaterialTheme.typography.bodyLarge)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -368,24 +363,27 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
                 OutlinedButton(
                     onClick = { alCambiar(-1) },
                     enabled = estado != null && vasos > 0,
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp),
-                ) { Text("−1") }
+                    modifier = Modifier.weight(1f).heightIn(min = 52.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
+                    border = BorderStroke(1.dp, Paleta.Borde),
+                ) { Text("−1", style = MaterialTheme.typography.titleMedium) }
                 Text(
                     "$vasos / $meta",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1.2f),
                 )
                 Button(
                     onClick = { alCambiar(1) },
                     enabled = estado != null,
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp),
-                ) { Text("+1") }
+                    modifier = Modifier.weight(1f).heightIn(min = 52.dp),
+                ) { Text("+1", style = MaterialTheme.typography.titleMedium) }
             }
             if (estado != null && vasos > 0) {
                 Text(
                     if (cumplidoAgua(vasos, meta)) "¡Meta cumplida!" else "Te faltan ${meta - vasos}.",
                     style = MaterialTheme.typography.bodyMedium,
+                    color = if (cumplidoAgua(vasos, meta)) Paleta.Verde else Paleta.TextoSecundario,
                 )
             }
             if (dia != null) {
@@ -404,26 +402,32 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
 /** Ánimo de hoy: 5 caritas, 1 toque; tocar otra lo corrige. */
 @Composable
 private fun TarjetaAnimo(valor: Int?, alAbrir: () -> Unit, alElegir: (Int) -> Unit) {
-    Card(onClick = alAbrir, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    TarjetaRom(alTocar = alAbrir, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("ÁNIMO", style = MaterialTheme.typography.titleMedium)
-            Text("¿Cómo te sentís hoy?")
+            Text("¿Cómo te sentís hoy?", style = MaterialTheme.typography.bodyLarge)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 CARITAS.forEachIndexed { i, carita ->
                     BotonOpcion(carita, elegido = valor == i + 1, modifier = Modifier.weight(1f)) { alElegir(i + 1) }
                 }
             }
-            if (valor != null) Text(NOMBRES_ANIMO[valor - 1], style = MaterialTheme.typography.bodyMedium)
-            Text("Ver calendario ›", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            if (valor != null) Text(NOMBRES_ANIMO[valor - 1], style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
+            Text("Ver calendario ›", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
         }
     }
 }
 
 @Composable
 private fun BotonOpcion(texto: String, elegido: Boolean, modifier: Modifier, alTocar: () -> Unit) {
-    val m = modifier.heightIn(min = 56.dp)
-    if (elegido) Button(onClick = alTocar, modifier = m) { Text(texto) }
-    else OutlinedButton(onClick = alTocar, modifier = m) { Text(texto) }
+    val m = modifier.heightIn(min = 52.dp)
+    if (elegido) Button(onClick = alTocar, modifier = m, contentPadding = PaddingValues(horizontal = 8.dp)) { Text(texto) }
+    else OutlinedButton(
+        onClick = alTocar,
+        modifier = m,
+        contentPadding = PaddingValues(horizontal = 8.dp),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
+        border = BorderStroke(1.dp, Paleta.Borde),
+    ) { Text(texto) }
 }
 
 /** [alCambiar] null = solo lectura. */
@@ -431,6 +435,6 @@ private fun BotonOpcion(texto: String, elegido: Boolean, modifier: Modifier, alT
 private fun FilaCheck(texto: String, marcado: Boolean, alCambiar: ((Boolean) -> Unit)?) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = marcado, onCheckedChange = alCambiar, enabled = alCambiar != null)
-        Text(texto)
+        Text(texto, style = MaterialTheme.typography.bodyLarge)
     }
 }

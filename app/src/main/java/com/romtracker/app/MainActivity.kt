@@ -27,6 +27,7 @@ import com.romtracker.app.ui.DetalleAnimo
 import com.romtracker.app.ui.Hoy
 import com.romtracker.app.ui.NuevoHabito
 import com.romtracker.app.ui.PantallaCopia
+import com.romtracker.app.ui.TemaRomTracker
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -40,8 +41,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val db = AppDatabase.obtener(this)
         setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+            TemaRomTracker {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     // cargando = true hasta saber si ya existe el perfil
                     var cargando by remember { mutableStateOf(true) }
                     var perfil by remember { mutableStateOf<Perfil?>(null) }
