@@ -23,8 +23,8 @@ data class Copia(
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 6
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 7
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -37,6 +37,7 @@ object CopiaJson {
             put("claveAncla", c.perfil.claveAncla)
             put("porQue", c.perfil.porQue)
             put("metaAgua", c.perfil.metaAgua)
+            put("tema", TemaPerfil.nombre(c.perfil.tema))
         })
         raiz.put("habitos", JSONArray().also { a ->
             c.habitos.forEach { a.put(JSONObject().put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)) }
@@ -98,6 +99,8 @@ object CopiaJson {
                 porQue = p.getString("porQue"),
                 // Las copias anteriores a la versión 3 no traen la meta: se usa la de por defecto.
                 metaAgua = p.optInt("metaAgua", 8),
+            // Las copias anteriores a la versión 7 no traen el tema: se usa el del sistema.
+            tema = TemaPerfil.deNombre(p.optString("tema", "SISTEMA")),
             )
             val habitos = raiz.getJSONArray("habitos").objetos().map {
                 val tipo = it.getString("tipo")

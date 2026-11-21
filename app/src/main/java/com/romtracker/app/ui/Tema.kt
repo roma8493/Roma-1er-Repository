@@ -12,7 +12,15 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.romtracker.app.data.TemaPerfil
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,40 +56,85 @@ import androidx.compose.ui.graphics.Shape
  * Tema central de RomTracker (0.5): claro, sobrio, estilo "Salud" pero nativo Android.
  * Única fuente de colores, formas y tipografía; las pantallas no definen los suyos.
  */
+class Colores(
+    val fondo: Color, val tarjeta: Color, val texto: Color, val textoSecundario: Color,
+    val titulo: Color, val tenue: Color, val acento: Color, val sobreAcento: Color,
+    val pista: Color, val borde: Color, val verde: Color, val ambar: Color, val rojo: Color,
+)
+
+private val ColoresClaros = Colores(
+    fondo = Color(0xFFFDF8F0),           // crema cálido
+    tarjeta = Color(0xFFF6EBDD),         // beige
+    texto = Color(0xFF1F1B16),           // contraste alto
+    textoSecundario = Color(0xFF5F5A52),
+    titulo = Color(0xFF7A5A12),          // dorado oliva de los títulos de tarjeta
+    tenue = Color(0xFF9A9183),           // ✕ y datos de poca importancia
+    acento = Color(0xFF4C6B43),          // verde oliva (botones, barras)
+    sobreAcento = Color(0xFFFFFFFF),
+    pista = Color(0xFFD9D5CC),           // fondo de barras y bordes suaves
+    borde = Color(0xFFC9BFAE),
+    verde = Color(0xFF1E8A3C),           // ✓
+    ambar = Color(0xFFB26A00),           // atención
+    rojo = Color(0xFFC03A2B),            // ✗ suave
+)
+
+/** Modo oscuro (0.8): marrón muy oscuro cálido, mismos acentos aclarados para mantener contraste. */
+private val ColoresOscuros = Colores(
+    fondo = Color(0xFF15130F),
+    tarjeta = Color(0xFF241F1A),
+    texto = Color(0xFFEDE6DA),
+    textoSecundario = Color(0xFFB8AF9F),
+    titulo = Color(0xFFE0B861),
+    tenue = Color(0xFF857C6E),
+    acento = Color(0xFF8DB380),
+    sobreAcento = Color(0xFF14210F),
+    pista = Color(0xFF3A352D),
+    borde = Color(0xFF4A443A),
+    verde = Color(0xFF5FC97A),
+    ambar = Color(0xFFE8A33D),
+    rojo = Color(0xFFE8776A),
+)
+
+private val LocalColores = staticCompositionLocalOf { ColoresClaros }
+
+/** Los colores se leen siempre dentro de un @Composable: así siguen al tema claro/oscuro vigente. */
 object Paleta {
-    val Fondo = Color(0xFFFDF8F0)        // crema cálido
-    val Tarjeta = Color(0xFFF6EBDD)      // beige
-    val Texto = Color(0xFF1F1B16)        // contraste alto
-    val TextoSecundario = Color(0xFF5F5A52)
-    val Titulo = Color(0xFF7A5A12)       // dorado oliva de los títulos de tarjeta
-    val Tenue = Color(0xFF9A9183)        // ✕ y datos de poca importancia
-    val Acento = Color(0xFF4C6B43)       // verde oliva (botones, barras)
-    val SobreAcento = Color(0xFFFFFFFF)
-    val Pista = Color(0xFFD9D5CC)        // fondo de barras y bordes suaves
-    val Borde = Color(0xFFC9BFAE)
-    val Verde = Color(0xFF1E8A3C)        // ✓
-    val Ambar = Color(0xFFB26A00)        // atención
-    val Rojo = Color(0xFFC03A2B)         // ✗ suave
+    val Fondo: Color @Composable get() = LocalColores.current.fondo
+    val Tarjeta: Color @Composable get() = LocalColores.current.tarjeta
+    val Texto: Color @Composable get() = LocalColores.current.texto
+    val TextoSecundario: Color @Composable get() = LocalColores.current.textoSecundario
+    val Titulo: Color @Composable get() = LocalColores.current.titulo
+    val Tenue: Color @Composable get() = LocalColores.current.tenue
+    val Acento: Color @Composable get() = LocalColores.current.acento
+    val SobreAcento: Color @Composable get() = LocalColores.current.sobreAcento
+    val Pista: Color @Composable get() = LocalColores.current.pista
+    val Borde: Color @Composable get() = LocalColores.current.borde
+    val Verde: Color @Composable get() = LocalColores.current.verde
+    val Ambar: Color @Composable get() = LocalColores.current.ambar
+    val Rojo: Color @Composable get() = LocalColores.current.rojo
 }
 
-private val Esquema: ColorScheme = lightColorScheme(
-    primary = Paleta.Acento,
-    onPrimary = Paleta.SobreAcento,
-    secondary = Paleta.Acento,
-    onSecondary = Paleta.SobreAcento,
-    background = Paleta.Fondo,
-    onBackground = Paleta.Texto,
-    surface = Paleta.Tarjeta,
-    onSurface = Paleta.Texto,
-    surfaceVariant = Paleta.Pista,
-    onSurfaceVariant = Paleta.TextoSecundario,
-    surfaceContainerHighest = Paleta.Tarjeta,
-    surfaceContainerHigh = Paleta.Tarjeta, // fondo de los diálogos
-    surfaceTint = Color.Transparent,
-    outline = Paleta.Borde,
-    outlineVariant = Paleta.Pista,
-    error = Paleta.Rojo,
-)
+private fun esquemaDe(c: Colores, oscuro: Boolean): ColorScheme {
+    val base = if (oscuro) darkColorScheme() else lightColorScheme()
+    return base.copy(
+        primary = c.acento,
+        onPrimary = c.sobreAcento,
+        secondary = c.acento,
+        onSecondary = c.sobreAcento,
+        background = c.fondo,
+        onBackground = c.texto,
+        surface = c.tarjeta,
+        onSurface = c.texto,
+        surfaceVariant = c.pista,
+        onSurfaceVariant = c.textoSecundario,
+        surfaceContainerHighest = c.tarjeta,
+        surfaceContainerHigh = c.tarjeta, // fondo de los diálogos
+        surfaceTint = Color.Transparent,
+        outline = c.borde,
+        outlineVariant = c.pista,
+        error = c.rojo,
+    )
+}
 
 private val Formas = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
@@ -113,9 +166,30 @@ private val Tipografia = Typography(
     labelSmall = TextStyle(fontFamily = Figtree, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
 )
 
+/** [tema] = valor de `Perfil.tema` (Sistema / Claro / Oscuro). */
 @Composable
-fun TemaRomTracker(contenido: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = Esquema, shapes = Formas, typography = Tipografia, content = contenido)
+fun TemaRomTracker(tema: Int = TemaPerfil.SISTEMA, contenido: @Composable () -> Unit) {
+    val oscuro = when (tema) {
+        TemaPerfil.OSCURO -> true
+        TemaPerfil.CLARO -> false
+        else -> isSystemInDarkTheme()
+    }
+    val colores = if (oscuro) ColoresOscuros else ColoresClaros
+    val vista = LocalView.current
+    if (!vista.isInEditMode) {
+        // Íconos de la barra de estado y de navegación legibles según el tema.
+        SideEffect {
+            val ventana = (vista.context as? android.app.Activity)?.window
+            if (ventana != null) {
+                val controlador = WindowCompat.getInsetsController(ventana, vista)
+                controlador.isAppearanceLightStatusBars = !oscuro
+                controlador.isAppearanceLightNavigationBars = !oscuro
+            }
+        }
+    }
+    CompositionLocalProvider(LocalColores provides colores) {
+        MaterialTheme(colorScheme = esquemaDe(colores, oscuro), shapes = Formas, typography = Tipografia, content = contenido)
+    }
 }
 
 /** Tarjeta beige de esquinas ~20 dp con sombra suave. [alTocar] null = no clicable. */

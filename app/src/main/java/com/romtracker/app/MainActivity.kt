@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Habito
 import com.romtracker.app.data.Perfil
+import com.romtracker.app.data.TemaPerfil
 import com.romtracker.app.data.TipoHabito
 import com.romtracker.app.ui.Ajustes
 import com.romtracker.app.ui.Bienvenida
@@ -43,12 +44,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val db = AppDatabase.obtener(this)
         setContent {
-            TemaRomTracker {
+            // El perfil se carga por encima del tema porque trae el tema elegido (Sistema/Claro/Oscuro).
+            // cargando = true hasta saber si ya existe el perfil
+            var cargando by remember { mutableStateOf(true) }
+            var perfil by remember { mutableStateOf<Perfil?>(null) }
+            val scope = rememberCoroutineScope()
+            TemaRomTracker(perfil?.tema ?: TemaPerfil.SISTEMA) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    // cargando = true hasta saber si ya existe el perfil
-                    var cargando by remember { mutableStateOf(true) }
-                    var perfil by remember { mutableStateOf<Perfil?>(null) }
-                    val scope = rememberCoroutineScope()
                     // null = pantalla Hoy; si no, el tipo de hábito cuyo Detalle se ve
                     var abierto by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -101,6 +103,17 @@ class MainActivity : ComponentActivity() {
                                     db.guardarPerfil(nuevo, LocalDate.now().toEpochDay())
                                     perfil = nuevo
                                     abierto = null
+                                }
+                            },
+                            alCambiarTema = { tema ->
+                                // Efecto inmediato: se guarda y se aplica sin salir de Ajustes
+                                val actual = perfil
+                                if (actual != null && actual.tema != tema) {
+                                    val nuevo = actual.copy(tema = tema)
+                                    scope.launch {
+                                        db.guardarPerfil(nuevo, LocalDate.now().toEpochDay())
+                                        perfil = nuevo
+                                    }
                                 }
                             },
                         )

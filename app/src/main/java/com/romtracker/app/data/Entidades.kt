@@ -14,7 +14,29 @@ data class Perfil(
     val porQue: String,
     /** Meta diaria de vasos de agua. Rige para los días nuevos; cada día guarda la suya en [Agua.meta]. */
     @ColumnInfo(defaultValue = "8") val metaAgua: Int = 8,
+    /** Tema de la app: [TemaPerfil.SISTEMA] (0), [TemaPerfil.CLARO] (1) u [TemaPerfil.OSCURO] (2). */
+    @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.SISTEMA,
 )
+
+/** Valores de [Perfil.tema] y sus nombres (los nombres se usan en la copia de seguridad). */
+object TemaPerfil {
+    const val SISTEMA = 0
+    const val CLARO = 1
+    const val OSCURO = 2
+
+    fun nombre(tema: Int): String = when (tema) {
+        CLARO -> "CLARO"
+        OSCURO -> "OSCURO"
+        else -> "SISTEMA"
+    }
+
+    /** Nombre desconocido o ausente = SISTEMA. */
+    fun deNombre(nombre: String?): Int = when (nombre) {
+        "CLARO" -> CLARO
+        "OSCURO" -> OSCURO
+        else -> SISTEMA
+    }
+}
 
 /** [tipo]: "GYM" o "COMIDA". */
 @Entity(tableName = "habito")

@@ -16,7 +16,7 @@ import com.romtracker.app.logic.puedeBorrarItem
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
         ChecklistItem::class, ChecklistMarca::class],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -160,7 +160,14 @@ abstract class AppDatabase : RoomDatabase() {
          * de la tabla `checklist` vieja, que NO se toca. Los ítems quedan con id fijo para que las marcas
          * copiadas apunten a ellos.
          */
-        val MIGRACION_5_6 = object : Migration(5, 6) {
+        /** 0.8.1: tema de la app en el perfil (0 = sistema). Solo agrega una columna. */
+    val MIGRACION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `perfil` ADD COLUMN `tema` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `checklist_item` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -186,7 +193,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7).build().also { instancia = it }
             }
     }
 }

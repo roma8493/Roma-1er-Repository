@@ -3,6 +3,7 @@ package com.romtracker.app.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,11 +25,12 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Perfil
+import com.romtracker.app.data.TemaPerfil
 
 /** Pantalla de Ajustes: edita los 4 datos de la Bienvenida. No toca registros, fase ni consistencia. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
+fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, alCambiarTema: (Int) -> Unit) {
     BackHandler(onBack = alVolver)
 
     var nombre by rememberSaveable { mutableStateOf(perfil.nombre) }
@@ -48,6 +50,19 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         TextButton(onClick = alVolver) { Text("← Ajustes", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto) }
+
+        Text("Tema", style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            listOf(TemaPerfil.SISTEMA to "Sistema", TemaPerfil.CLARO to "Claro", TemaPerfil.OSCURO to "Oscuro")
+                .forEach { (valor, texto) ->
+                    BotonRom(
+                        texto = texto,
+                        modifier = Modifier.weight(1f),
+                        destacado = perfil.tema == valor,
+                        alTocar = { alCambiarTema(valor) },
+                    )
+                }
+        }
 
         CampoRom(
             value = nombre,
@@ -94,7 +109,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
             habilitado = valido,
             alTocar = {
                 alGuardar(
-                    Perfil(
+                    perfil.copy(
                         nombre = nombre.trim(),
                         horaSalidaMinutos = reloj.hour * 60 + reloj.minute,
                         claveAncla = ancla.trim(),

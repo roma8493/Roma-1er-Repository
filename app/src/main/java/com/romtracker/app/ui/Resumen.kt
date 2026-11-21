@@ -45,14 +45,17 @@ private const val DIAS_VISIBLES = 7
 private val ANCHO_DIA = 36.dp
 
 /** Una celda del cuadro: texto (vacío = sin dato) y su color. */
-private data class Celda(val texto: String = "", val color: Color = Color.Unspecified)
+private data class Celda(val texto: String = "", val tono: Tono = Tono.NINGUNO)
+
+/** El color real se elige al dibujar (dentro de un @Composable) para seguir el tema claro/oscuro. */
+private enum class Tono { NINGUNO, OK, TENUE, ATENCION }
 
 /** Una fila del cuadro. [clave] null = todavía no se puede abrir su Detalle. */
 private data class Fila(val titulo: String, val clave: String?, val celda: (LocalDate) -> Celda)
 
 private fun celdaSiNo(valor: Boolean?): Celda = when (valor) {
-    true -> Celda("✓", Paleta.Verde)
-    false -> Celda("✕", Paleta.Tenue)
+    true -> Celda("✓", Tono.OK)
+    false -> Celda("✕", Tono.TENUE)
     null -> Celda()
 }
 
@@ -90,8 +93,8 @@ fun Resumen(
             val a = aguas[dia]
             when {
                 a == null -> Celda()
-                cumplidoAgua(a.vasos, a.meta) -> Celda("✓", Paleta.Verde)
-                else -> Celda(a.vasos.toString(), Paleta.Ambar)
+                cumplidoAgua(a.vasos, a.meta) -> Celda("✓", Tono.OK)
+                else -> Celda(a.vasos.toString(), Tono.ATENCION)
             }
         }
         db.habitoPropioDao().todos().forEach { p ->
@@ -174,10 +177,16 @@ fun Resumen(
                             )
                             dias.forEach { d ->
                                 val c = fila.celda(d)
+                                val colorCelda = when (c.tono) {
+                                    Tono.OK -> Paleta.Verde
+                                    Tono.TENUE -> Paleta.Tenue
+                                    Tono.ATENCION -> Paleta.Ambar
+                                    Tono.NINGUNO -> Color.Unspecified
+                                }
                                 Box(Modifier.width(ANCHO_DIA), contentAlignment = Alignment.Center) {
                                     Text(
                                         c.texto,
-                                        color = c.color,
+                                        color = colorCelda,
                                         style = MaterialTheme.typography.titleMedium,
                                         textAlign = TextAlign.Center,
                                     )

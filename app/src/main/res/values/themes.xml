@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ventana clara cuando el celular está en modo claro. Los colores reales los pone TemaRomTracker. -->
+    <style name="Theme.RomTracker" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFFDF8F0</item>
+    </style>
+</resources>

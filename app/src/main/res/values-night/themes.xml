@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ventana oscura cuando el celular está en modo oscuro (evita el destello blanco al abrir). -->
+    <style name="Theme.RomTracker" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#FF15130F</item>
+    </style>
+</resources>
