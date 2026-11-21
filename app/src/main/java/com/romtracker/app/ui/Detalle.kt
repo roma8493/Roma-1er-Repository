@@ -19,10 +19,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -149,7 +148,9 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        TextButton(onClick = alVolver) { Text("← $titulo", style = MaterialTheme.typography.titleLarge) }
+        TextButton(onClick = alVolver) {
+            Text("← $titulo", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto)
+        }
 
         val ini = inicio
         if (ini == null) {
@@ -162,33 +163,35 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
         val cons = consistencia(ini, hoy, registros)
         val racha = rachaActual(ini, hoy, registros)
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 val nombreFase = when (e.fase) {
                     Fase.ADQUISICION -> "Adquisición"
                     Fase.CONSOLIDACION -> "Consolidación"
                     Fase.AUTOMATICO -> "Automático"
                 }
-                Text("Fase: $nombreFase · día $dia", style = MaterialTheme.typography.titleMedium)
+                Text("FASE", style = MaterialTheme.typography.labelSmall, color = Paleta.TextoSecundario)
+                Text("$nombreFase · día $dia", style = MaterialTheme.typography.titleLarge)
                 if (e.metaSiguiente != null && e.diasParaSiguiente != null) {
-                    LinearProgressIndicator(
-                        progress = { (dia.toFloat() / e.metaSiguiente).coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth().height(12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    )
+                    BarraRom((dia.toFloat() / e.metaSiguiente).coerceIn(0f, 1f))
                     val siguiente = if (e.fase == Fase.ADQUISICION) "Consolidación" else "Automático"
-                    Text("Falta${if (e.diasParaSiguiente == 1) " 1 día" else "n ${e.diasParaSiguiente} días"} para $siguiente")
+                    Text(
+                        "Falta${if (e.diasParaSiguiente == 1) " 1 día" else "n ${e.diasParaSiguiente} días"} para $siguiente",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Paleta.TextoSecundario,
+                    )
                 } else {
-                    Text("Automático 🎉")
+                    Text("Automático 🎉", style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
                 }
-                Text("Consistencia: ${cons.cumplidos} de ${cons.total}")
-                Text("Racha actual: $racha ${if (racha == 1) "día" else "días"}")
+                Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Estadistica("CONSISTENCIA", "${cons.cumplidos}", "de ${cons.total} días", Modifier.weight(1f))
+                    Estadistica("RACHA", "$racha", if (racha == 1) "día" else "días", Modifier.weight(1f))
+                }
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -197,7 +200,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     TextButton(
                         onClick = { mes = mes.minusMonths(1) },
                         enabled = mes.isAfter(YearMonth.from(ini)),
-                    ) { Text("‹") }
+                    ) { Text("‹", style = MaterialTheme.typography.titleLarge) }
                     Text(
                         mes.month.getDisplayName(TextStyle.FULL, LOCALE_ES)
                             .replaceFirstChar { it.uppercase() } + " ${mes.year}",
@@ -206,13 +209,13 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     TextButton(
                         onClick = { mes = mes.plusMonths(1) },
                         enabled = mes.isBefore(YearMonth.from(hoy)),
-                    ) { Text("›") }
+                    ) { Text("›", style = MaterialTheme.typography.titleLarge) }
                 }
                 Row(Modifier.fillMaxWidth()) {
                     listOf("L", "M", "M", "J", "V", "S", "D").forEach {
                         Text(
                             it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelMedium, color = Paleta.TextoSecundario,
                         )
                     }
                 }
@@ -268,20 +271,24 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 Text(
                     leyenda + "Podés completar hoy y los 7 días anteriores.",
                     style = MaterialTheme.typography.bodySmall,
+                    color = Paleta.TextoSecundario,
                 )
             }
         }
 
         val p = propio
         if (esPropio && p != null) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Después de ${p.claveAncla}", style = MaterialTheme.typography.titleMedium)
-                    Text(if (dejar) "Quiero dejar: ${p.nombre}" else "Quiero hacer: ${p.nombre}")
-                    Text("¿Por qué? ${p.porQue}")
+                    Text(
+                        if (dejar) "Quiero dejar: ${p.nombre}" else "Quiero hacer: ${p.nombre}",
+                        color = Paleta.TextoSecundario,
+                    )
+                    Text("¿Por qué? ${p.porQue}", color = Paleta.TextoSecundario)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { editando = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Editar") }
-                        OutlinedButton(onClick = { borrando = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Borrar hábito") }
+                        BotonSecundario("Editar") { editando = true }
+                        BotonSecundario("Borrar hábito") { borrando = true }
                     }
                 }
             }
@@ -318,10 +325,10 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
         }
 
         if (esGym) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Después de ${perfil.claveAncla}, voy al gym.", style = MaterialTheme.typography.titleMedium)
-                    Text("¿Por qué? ${perfil.porQue}")
+                    Text("¿Por qué? ${perfil.porQue}", color = Paleta.TextoSecundario)
                 }
             }
         }
@@ -339,11 +346,15 @@ internal fun CeldaDia(
     opciones: List<Pair<String, () -> Unit>>,
 ) {
     var menu by remember { mutableStateOf(false) }
-    val colores = MaterialTheme.colorScheme
     val fondo = when (valor) {
-        true -> colores.primaryContainer
-        false -> colores.secondaryContainer
-        null -> colores.surfaceVariant
+        true -> Paleta.Verde.copy(alpha = 0.16f)
+        false -> Paleta.Rojo.copy(alpha = 0.14f)
+        null -> Paleta.Fondo
+    }
+    val colorSimbolo = when (valor) {
+        true -> Paleta.Verde
+        false -> Paleta.Rojo
+        null -> Paleta.TextoSecundario
     }
     val simbolo = when {
         futuro -> ""
@@ -357,16 +368,17 @@ internal fun CeldaDia(
             .fillMaxWidth()
             .aspectRatio(1f)
             .alpha(if (editable || futuro) 1f else 0.4f)
-            .background(if (futuro) colores.surface else fondo, RoundedCornerShape(8.dp))
-            .then(if (esHoy) Modifier.border(BorderStroke(2.dp, colores.primary), RoundedCornerShape(8.dp)) else Modifier)
+            .background(if (futuro) Paleta.Tarjeta else fondo, RoundedCornerShape(12.dp))
+            .then(if (esHoy) Modifier.border(BorderStroke(2.dp, Paleta.Acento), RoundedCornerShape(12.dp)) else Modifier)
             .clickable(enabled = editable) { menu = true },
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("${fecha.dayOfMonth}", style = MaterialTheme.typography.labelSmall)
+            Text("${fecha.dayOfMonth}", style = MaterialTheme.typography.labelSmall, color = Paleta.TextoSecundario)
             Text(
                 simbolo,
                 style = if (textoCelda != null) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodyMedium,
+                color = if (textoCelda != null) Paleta.Texto else colorSimbolo,
             )
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -406,4 +418,26 @@ private fun DialogoEditarPropio(
         },
         dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
     )
+}
+
+/** Etiqueta pequeña, número grande y unidad: para consistencia y racha. */
+@Composable
+private fun Estadistica(etiqueta: String, numero: String, unidad: String, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(etiqueta, style = MaterialTheme.typography.labelSmall, color = Paleta.TextoSecundario)
+        Text(numero, style = MaterialTheme.typography.headlineMedium)
+        Text(unidad, style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
+    }
+}
+
+/** Botón redondeado de contorno suave (alto ≥ 48 dp), igual al de Hoy. */
+@Composable
+private fun BotonSecundario(texto: String, alTocar: () -> Unit) {
+    OutlinedButton(
+        onClick = alTocar,
+        modifier = Modifier.heightIn(min = 48.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
+        border = BorderStroke(1.dp, Paleta.Borde),
+    ) { Text(texto) }
 }

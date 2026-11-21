@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -84,16 +83,16 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        TextButton(onClick = alVolver) { Text("← ÁNIMO", style = MaterialTheme.typography.titleLarge) }
+        TextButton(onClick = alVolver) { Text("← ÁNIMO", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto) }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    TextButton(onClick = { mes = mes.minusMonths(1) }) { Text("‹") }
+                    TextButton(onClick = { mes = mes.minusMonths(1) }) { Text("‹", style = MaterialTheme.typography.titleLarge) }
                     Text(
                         mes.month.getDisplayName(TextStyle.FULL, LOCALE_ES)
                             .replaceFirstChar { it.uppercase() } + " ${mes.year}",
@@ -102,13 +101,13 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
                     TextButton(
                         onClick = { mes = mes.plusMonths(1) },
                         enabled = mes.isBefore(YearMonth.from(hoy)),
-                    ) { Text("›") }
+                    ) { Text("›", style = MaterialTheme.typography.titleLarge) }
                 }
                 Row(Modifier.fillMaxWidth()) {
                     listOf("L", "M", "M", "J", "V", "S", "D").forEach {
                         Text(
                             it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelMedium, color = Paleta.TextoSecundario,
                         )
                     }
                 }
@@ -140,11 +139,12 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
                 Text(
                     "Una carita por día · · sin dato. Podés completar hoy y los 7 días anteriores.",
                     style = MaterialTheme.typography.bodySmall,
+                    color = Paleta.TextoSecundario,
                 )
             }
         }
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Ánimo y hábitos", style = MaterialTheme.typography.titleMedium)
                 val faltan = diasFaltanParaCruce(animos)
                 if (faltan > 0) {
@@ -152,15 +152,17 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
                         "Con 14 días de ánimo registrado vas a ver cómo se relaciona con tus hábitos. " +
                             "Llevás ${animos.size}; faltan $faltan.",
                         style = MaterialTheme.typography.bodyMedium,
+                        color = Paleta.TextoSecundario,
                     )
                 } else {
                     registros.forEach { (nombre, regs) ->
-                        Text(nombre, style = MaterialTheme.typography.titleSmall)
+                        Text(nombre.uppercase(), style = MaterialTheme.typography.labelSmall, color = Paleta.TextoSecundario)
                         Text(textoCruce(cruceAnimo(animos, regs)), style = MaterialTheme.typography.bodyMedium)
                     }
                     Text(
                         "Es solo una asociación en tus datos; no dice qué causa qué.",
                         style = MaterialTheme.typography.bodySmall,
+                        color = Paleta.TextoSecundario,
                     )
                 }
             }
