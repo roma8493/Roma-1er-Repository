@@ -69,4 +69,5 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- SPEC 0.7 aprobada (2026-11-21) y escrita en `docs/SPEC.md`: tareas T23–T26 (Resumen 7 días; checklist editable con lista libre, máx. 6). T23–T25 confirmadas en el A34 (0.7.1). T26 confirmada en 0.7.2. Todas las tareas de la SPEC 0.7 están `[x]`: proponer nueva SPEC (0.8) o dar el proyecto por terminado.
+- SPEC 0.7 aprobada (2026-11-21) y escrita en `docs/SPEC.md`: tareas T23–T26 (Resumen 7 días; checklist editable con lista libre, máx. 6). T23–T25 confirmadas en el A34 (0.7.1). T26 confirmada en 0.7.2. Todas las tareas de la SPEC 0.7 están `[x]`.
+- SPEC 0.8 aprobada y escrita (2026-11-21): modo oscuro (Sistema/Claro/Oscuro), R10 versión mínima (al crear y en Gym), R6 automatismo (4 preguntas, cada 28 días, hábitos HACER). Tareas T27–T32 en `docs/SPEC.md`. Próxima tarea: T27 (paleta dinámica + oscuro siguiendo al sistema), en sesión limpia (`/clear`).
