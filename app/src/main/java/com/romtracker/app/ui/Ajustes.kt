@@ -33,6 +33,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
     var nombre by rememberSaveable { mutableStateOf(perfil.nombre) }
     var ancla by rememberSaveable { mutableStateOf(perfil.claveAncla) }
     var porQue by rememberSaveable { mutableStateOf(perfil.porQue) }
+    var versionMinima by rememberSaveable { mutableStateOf(perfil.versionMinima) }
     var metaAgua by rememberSaveable { mutableStateOf(perfil.metaAgua.toString()) }
     var horaSalida by rememberSaveable { mutableStateOf(perfil.horaSalidaMinutos) }
     val metaValida = metaAgua.toIntOrNull()?.let { it in 1..30 } == true
@@ -86,6 +87,15 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
         )
 
         CampoRom(
+            value = versionMinima,
+            onValueChange = { versionMinima = it },
+            label = { Text("Versión mínima del gym (opcional)") },
+            placeholder = { Text("solo 20 minutos") },
+            supportingText = { Text("Para los días difíciles: algo chico que igual cuenta.") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        CampoRom(
             value = metaAgua,
             onValueChange = { metaAgua = it.filter(Char::isDigit).take(2) },
             label = { Text("Meta de vasos de agua por día (1 a 30)") },
@@ -107,6 +117,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
                         horaSalidaMinutos = horaSalida,
                         claveAncla = ancla.trim(),
                         porQue = porQue.trim(),
+                        versionMinima = versionMinima.trim(),
                         metaAgua = metaAgua.toInt(),
                     )
                 )

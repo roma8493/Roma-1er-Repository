@@ -285,6 +285,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                         color = Paleta.TextoSecundario,
                     )
                     Text("¿Por qué? ${p.porQue}", color = Paleta.TextoSecundario)
+                    if (p.versionMinima.isNotBlank()) Text("Versión mínima: ${p.versionMinima}", color = Paleta.TextoSecundario)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         BotonSecundario("Editar") { editando = true }
                         BotonSecundario("Borrar hábito") { borrando = true }
@@ -295,9 +296,9 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 DialogoEditarPropio(
                     p,
                     alCancelar = { editando = false },
-                    alGuardar = { nombre, ancla, porQue ->
+                    alGuardar = { nombre, ancla, porQue, versionMinima ->
                         scope.launch {
-                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue))
+                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue, versionMinima = versionMinima))
                             editando = false
                             cargar()
                         }
@@ -328,6 +329,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Después de ${perfil.claveAncla}, voy al gym.", style = MaterialTheme.typography.titleMedium)
                     Text("¿Por qué? ${perfil.porQue}", color = Paleta.TextoSecundario)
+                    if (perfil.versionMinima.isNotBlank()) Text("Versión mínima: ${perfil.versionMinima}", color = Paleta.TextoSecundario)
                 }
             }
         }
@@ -393,11 +395,12 @@ internal fun CeldaDia(
 private fun DialogoEditarPropio(
     p: HabitoPropio,
     alCancelar: () -> Unit,
-    alGuardar: (nombre: String, ancla: String, porQue: String) -> Unit,
+    alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String) -> Unit,
 ) {
     var nombre by rememberSaveable { mutableStateOf(p.nombre) }
     var ancla by rememberSaveable { mutableStateOf(p.claveAncla) }
     var porQue by rememberSaveable { mutableStateOf(p.porQue) }
+    var versionMinima by rememberSaveable { mutableStateOf(p.versionMinima) }
     val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank()
     AlertDialog(
         onDismissRequest = alCancelar,
@@ -410,10 +413,11 @@ private fun DialogoEditarPropio(
                 CampoRom(nombre, { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 CampoRom(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
                 CampoRom(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+                CampoRom(versionMinima, { versionMinima = it }, label = { Text("Versión mínima (opcional)") }, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {
-            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim()) }) { Text("Guardar") }
+            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim(), versionMinima.trim()) }) { Text("Guardar") }
         },
         dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
     )

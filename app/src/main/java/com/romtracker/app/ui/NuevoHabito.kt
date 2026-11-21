@@ -30,7 +30,7 @@ import com.romtracker.app.data.TipoPropio
 @Composable
 fun NuevoHabito(
     alVolver: () -> Unit,
-    alCrear: (nombre: String, tipo: String, ancla: String, porQue: String) -> Unit,
+    alCrear: (nombre: String, tipo: String, ancla: String, porQue: String, versionMinima: String) -> Unit,
 ) {
     BackHandler(onBack = alVolver)
 
@@ -38,6 +38,7 @@ fun NuevoHabito(
     var tipo by rememberSaveable { mutableStateOf(TipoPropio.HACER) }
     var ancla by rememberSaveable { mutableStateOf("") }
     var porQue by rememberSaveable { mutableStateOf("") }
+    var versionMinima by rememberSaveable { mutableStateOf("") }
     val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank()
 
     Column(
@@ -84,11 +85,20 @@ fun NuevoHabito(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        CampoRom(
+            value = versionMinima,
+            onValueChange = { versionMinima = it },
+            label = { Text("Versión mínima (opcional)") },
+            placeholder = { Text("solo 10 minutos") },
+            supportingText = { Text("Para los días difíciles: algo chico que igual cuenta.") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         BotonRom(
             texto = "Crear hábito",
             modifier = Modifier.fillMaxWidth(),
             habilitado = valido,
-            alTocar = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim()) },
+            alTocar = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim(), versionMinima.trim()) },
         )
     }
 }

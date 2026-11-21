@@ -207,6 +207,7 @@ fun Hoy(
             mensajeSi = "¡Qué bueno que fuiste!",
             alAbrir = { alAbrir(TipoHabito.GYM) },
             alElegir = { registrar(TipoHabito.GYM, it) },
+            versionMinima = perfil.versionMinima,
         )
 
         TarjetaHabito(
@@ -246,6 +247,7 @@ fun Hoy(
                 mensajeNo = if (dejar) "Un día no borra lo que venís logrando." else "Mañana es otra oportunidad.",
                 alAbrir = { alAbrir(claveRegistroPropio(p.id)) },
                 alElegir = { registrarPropio(p, it) },
+                versionMinima = p.versionMinima,
             )
         }
 
@@ -298,6 +300,7 @@ private fun TarjetaHabito(
     mensajeNo: String,
     alAbrir: () -> Unit,
     alElegir: (Boolean) -> Unit,
+    versionMinima: String = "",
 ) {
     // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
     TarjetaRom(alTocar = alAbrir, habilitada = estado != null, modifier = Modifier.fillMaxWidth()) {
@@ -323,6 +326,9 @@ private fun TarjetaHabito(
                 }
             }
             Text(pregunta, style = MaterialTheme.typography.bodyLarge)
+            if (versionMinima.isNotBlank()) {
+                Text("Versión mínima: $versionMinima", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 val elegido = estado?.hoy
                 BotonOpcion(textoSi, elegido == true, Modifier.weight(1f)) { alElegir(true) }
