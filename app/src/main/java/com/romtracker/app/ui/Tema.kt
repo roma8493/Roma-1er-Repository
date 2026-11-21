@@ -173,6 +173,7 @@ fun CampoRom(
     singleLine: Boolean = false,
     minLines: Int = 1,
     isError: Boolean = false,
+    enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
     OutlinedTextField(
@@ -185,6 +186,7 @@ fun CampoRom(
         singleLine = singleLine,
         minLines = minLines,
         isError = isError,
+        enabled = enabled,
         keyboardOptions = keyboardOptions,
         shape = MaterialTheme.shapes.medium,
         colors = OutlinedTextFieldDefaults.colors(

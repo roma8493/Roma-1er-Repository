@@ -83,6 +83,7 @@ fun Hoy(
     var animo by remember { mutableStateOf<Int?>(null) }
     // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
     var propios by remember { mutableStateOf<List<Pair<HabitoPropio, TarjetaEstado>>>(emptyList()) }
+    var editandoChecklist by remember { mutableStateOf(false) }
     // Checklist editable: ítems actuales y marcas de anoche (para hoy) y de esta noche (para mañana).
     var itemsChecklist by remember { mutableStateOf<List<ChecklistItem>>(emptyList()) }
     var anoche by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
@@ -259,10 +260,28 @@ fun Hoy(
 
         TarjetaRom(modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Para mañana (noche)", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Para mañana (noche)", style = MaterialTheme.typography.titleMedium)
+                    TextButton(onClick = { editandoChecklist = true }) { Text("Editar") }
+                }
                 itemsChecklist.forEach { item ->
                     FilaCheck(item.texto, estaHecho(paraManana, item.id)) { marcarChecklist(item.id, it) }
                 }
+            }
+        }
+    }
+
+    if (editandoChecklist) {
+        EditarChecklist(db) {
+            editandoChecklist = false
+            scope.launch {
+                itemsChecklist = db.checklistItemDao().todos()
+                anoche = db.checklistMarcaDao().deDia(fecha.toEpochDay())
+                paraManana = db.checklistMarcaDao().deDia(fecha.plusDays(1).toEpochDay())
             }
         }
     }
