@@ -204,3 +204,19 @@ interface AutomatismoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(checks: List<Automatismo>)
 }
+
+@Dao
+interface RevisionDao {
+    @Query("SELECT * FROM revision ORDER BY semana")
+    suspend fun todas(): List<Revision>
+
+    /** Una revisión por semana: si ya había una, se reemplaza. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(revision: Revision)
+
+    @Query("DELETE FROM revision")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(revisiones: List<Revision>)
+}

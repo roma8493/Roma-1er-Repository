@@ -2,6 +2,7 @@ package com.romtracker.app.data
 
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
 import com.romtracker.app.logic.itemsPorDefecto
+import com.romtracker.app.logic.lunesDe
 import com.romtracker.app.logic.marcasDeChecklistVieja
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,14 +19,15 @@ data class Copia(
     val checklistItems: List<ChecklistItem> = emptyList(),
     val checklistMarcas: List<ChecklistMarca> = emptyList(),
     val automatismos: List<Automatismo> = emptyList(),
+    val revisiones: List<Revision> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 9
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 10
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -88,6 +90,11 @@ object CopiaJson {
                     JSONObject().put("habito", it.habito).put("fecha", it.fecha)
                         .put("r1", it.r1).put("r2", it.r2).put("r3", it.r3).put("r4", it.r4)
                 )
+            }
+        })
+        raiz.put("revisiones", JSONArray().also { a ->
+            c.revisiones.forEach {
+                a.put(JSONObject().put("semana", it.semana).put("barrera", it.barrera).put("cambio", it.cambio))
             }
         })
         return raiz.toString(2)
@@ -175,7 +182,13 @@ object CopiaJson {
                 if (r.any { v -> v !in 1..5 }) throw CopiaInvalida("La copia tiene una respuesta de automatismo fuera de rango.")
                 Automatismo(h, it.getLong("fecha"), r[0], r[1], r[2], r[3])
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos)
+            // Las copias anteriores a la versión 10 no traen "revisiones": se leen como lista vacía.
+            val revisiones = raiz.optJSONArray("revisiones")?.objetos()?.map {
+                val semana = it.getLong("semana")
+                if (semana != lunesDe(semana)) throw CopiaInvalida("La copia tiene una revisión semanal con una fecha inválida.")
+                Revision(semana, it.optString("barrera", ""), it.optString("cambio", ""))
+            } ?: emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

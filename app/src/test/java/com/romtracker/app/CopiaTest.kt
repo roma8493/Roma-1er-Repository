@@ -231,4 +231,21 @@ class CopiaTest {
         val mala = copia.copy(automatismos = listOf(Automatismo(claveRegistroPropio(99), 20028, 3, 3, 3, 3)))
         assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
     }
+
+    private val lunes = java.time.LocalDate.of(2026, 11, 16).toEpochDay()
+
+    @Test fun idaYVueltaConservaRevisiones() {
+        val conRevision = copia.copy(revisiones = listOf(Revision(lunes, "Cansancio", "Dejar el bolso listo"), Revision(lunes + 7, "", "")))
+        assertEquals(conRevision, CopiaJson.deTexto(CopiaJson.aTexto(conRevision)))
+    }
+
+    @Test fun copiaViejaSinRevisionesSeRestauraConListaVacia() {
+        val texto = org.json.JSONObject(CopiaJson.aTexto(copia)).apply { remove("revisiones"); put("version", 9) }.toString()
+        assertTrue(CopiaJson.deTexto(texto).revisiones.isEmpty())
+    }
+
+    @Test fun revisionConSemanaQueNoEsLunesSeRechaza() {
+        val mala = copia.copy(revisiones = listOf(Revision(lunes + 2, "x", "y")))
+        assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
+    }
 }

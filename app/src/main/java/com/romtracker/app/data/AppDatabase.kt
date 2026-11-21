@@ -15,8 +15,8 @@ import com.romtracker.app.logic.puedeBorrarItem
 
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
-        ChecklistItem::class, ChecklistMarca::class, Automatismo::class],
-    version = 9,
+        ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class],
+    version = 10,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,12 +30,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun checklistItemDao(): ChecklistItemDao
     abstract fun checklistMarcaDao(): ChecklistMarcaDao
     abstract fun automatismoDao(): AutomatismoDao
+    abstract fun revisionDao(): RevisionDao
 
     /** Lee todo para la copia de seguridad. Devuelve null si todavía no hay perfil. */
     suspend fun exportar(): Copia? = withTransaction {
         val perfil = perfilDao().obtener() ?: return@withTransaction null
         Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos(),
-            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos())
+            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos(), revisionDao().todas())
     }
 
     /** Guarda los vasos de un día y crea el hábito Agua si es el primer registro (inicio = esa fecha). */
@@ -114,6 +115,7 @@ abstract class AppDatabase : RoomDatabase() {
         checklistItemDao().borrarTodo()
         checklistMarcaDao().borrarTodo()
         automatismoDao().borrarTodo()
+        revisionDao().borrarTodo()
         perfilDao().guardar(perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
@@ -124,6 +126,7 @@ abstract class AppDatabase : RoomDatabase() {
         checklistItemDao().insertar(copia.checklistItems)
         checklistMarcaDao().insertar(copia.checklistMarcas)
         automatismoDao().insertar(copia.automatismos)
+        revisionDao().insertar(copia.revisiones)
         perfil
     }
 
@@ -199,6 +202,16 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /** 0.9.1: solo agrega la tabla revision (R9, revisión semanal); no toca ninguna tabla con datos existentes. */
+    val MIGRACION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `revision` (`semana` INTEGER NOT NULL, `barrera` TEXT NOT NULL, " +
+                    "`cambio` TEXT NOT NULL, PRIMARY KEY(`semana`))"
+            )
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -225,7 +238,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10).build().also { instancia = it }
             }
     }
 }

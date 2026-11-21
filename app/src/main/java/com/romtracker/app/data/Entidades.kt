@@ -125,6 +125,17 @@ data class Automatismo(
     val r4: Int,
 )
 
+/**
+ * Revisión semanal (R9). [semana] = epochDay del lunes de esa semana (una revisión por semana).
+ * [barrera]: qué la frenó; [cambio]: qué puede cambiar en su entorno. Ambos opcionales (pueden quedar vacíos).
+ */
+@Entity(tableName = "revision")
+data class Revision(
+    @PrimaryKey val semana: Long,
+    val barrera: String = "",
+    val cambio: String = "",
+)
+
 object TipoPropio {
     const val HACER = "HACER"
     const val DEJAR = "DEJAR"
