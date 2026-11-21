@@ -190,3 +190,14 @@
 
 ## Versión 0.6 — Resumen global (pedido del usuario 2026-11-21)
 - [x] T22: Pantalla "Resumen" (`ui/Resumen.kt`, botón en Hoy): cuadro con todos los hábitos (Gym, Comida, Agua, propios, Ánimo) × últimos 5 días, ✓/✕/vacío, navegación ‹ Antes / Después › de a 5 días, tocar un nombre abre su Detalle. Solo lectura, sin migración. Versión 0.6.0. Verifica en el celular.
+
+## Versión 0.7 — Resumen de 7 días y checklist editable (pedido del usuario 2026-11-21)
+Decisiones aprobadas: checklist con lista libre (agregar, renombrar, borrar), máximo 6 ítems y mínimo 1; los cambios rigen para todas las noches; "Lo que preparaste anoche" muestra solo los ítems actuales (borrar un ítem borra también sus marcas); Resumen con 7 columnas y navegación de a 7 días.
+Datos: tabla nueva `checklist_item` (id autogenerado, texto, orden) y `checklist_marca` (paraFecha, itemId, hecho) con `Migration(5,6)` (Room v6): crea las tablas, siembra los 3 ítems actuales ("Bolso del gym listo", "Comida preparada", "Decidí a qué hora voy") y copia las marcas de la tabla `checklist` vieja, que se conserva sin tocar. Copia de seguridad versión 6 (las 1–5 se siguen leyendo).
+
+- [ ] T23: Resumen con 7 días: `DIAS_VISIBLES = 5` → 7 en `ui/Resumen.kt`, ‹ Antes / Después › avanza de a 7; las 7 columnas deben entrar en el ancho del A34 sin scroll horizontal (achicar columna del nombre si hace falta). Sin migración. Versión 0.6.1. Verifica en el celular.
+- [ ] T24: Datos de la checklist editable: tablas `checklist_item` y `checklist_marca`, `Migration(5,6)` con siembra y copia de marcas, DAOs, lógica pura (agregar, renombrar, borrar, tope 6, mínimo 1), copia de seguridad v6, tests (`ChecklistTest`, `CopiaTest`). Sin UI todavía: el APK no cambia para el usuario. Versión 0.7.0 (sin cambio visible).
+- [ ] T25: Hoy usa los ítems dinámicos: la tarjeta "Para mañana (noche)" y "Lo que preparaste anoche" leen `checklist_item`/`checklist_marca` en vez de las 3 casillas fijas. Se ve igual que antes con los 3 ítems por defecto. Versión 0.7.1. Verifica en el celular (instalar encima de 0.6.x: no se pierde nada y las marcas viejas siguen).
+- [ ] T26: Edición en la tarjeta "Para mañana (noche)": botón Editar → diálogo con la lista de ítems (renombrar, borrar con confirmación, agregar; "Agregar" deshabilitado con 6; no se puede borrar el último). Versión 0.7.2. Verifica en el celular.
+
+Criterios de aceptación 0.7: (1) Resumen muestra 7 días y navega de a 7; (2) tras instalar encima de 0.6 los 3 ítems originales y sus marcas siguen; (3) se puede renombrar, agregar hasta 6 y borrar hasta 1; (4) borrar un ítem lo quita también de lo de anoche; (5) copia de seguridad hecha en 0.7 se restaura y una copia 0.6 sigue restaurando.

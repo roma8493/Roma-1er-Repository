@@ -69,4 +69,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Versión 0.6 cerrada: T22 (Resumen global, v0.6.0) confirmada por el usuario (2026-11-21). Todas las tareas de `docs/SPEC.md` están hechas. Decidir con el usuario: nueva SPEC (nueva versión) o dar el proyecto por terminado.
+- SPEC 0.7 aprobada (2026-11-21) y escrita en `docs/SPEC.md`: tareas T23–T26 (Resumen 7 días; checklist editable con lista libre, máx. 6). Próxima tarea: T23 (la más chica). Una tarea por sesión limpia (`/clear`).
