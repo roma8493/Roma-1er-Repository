@@ -286,7 +286,7 @@ private fun TarjetaHabito(
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (estado == null) {
                 // Solo la comida puede no existir todavía: empieza con el primer registro.
-                Text(titulo, style = MaterialTheme.typography.titleMedium)
+                Text(titulo, style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
             } else {
                 val e = estadoDeFase(estado.dia)
                 val nombreFase = when (e.fase) {
@@ -294,7 +294,7 @@ private fun TarjetaHabito(
                     Fase.CONSOLIDACION -> "Consolidación"
                     Fase.AUTOMATICO -> "Automático"
                 }
-                Text(titulo, style = MaterialTheme.typography.titleMedium)
+                Text(titulo, style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
                 Text("$nombreFase · día ${estado.dia}", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 if (e.metaSiguiente != null) {
                     val avance = estado.dia.toFloat() / e.metaSiguiente
@@ -335,7 +335,7 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val dia = estado?.dia
             if (dia == null) {
-                Text("AGUA", style = MaterialTheme.typography.titleMedium)
+                Text("AGUA", style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
             } else {
                 val e = estadoDeFase(dia)
                 val nombreFase = when (e.fase) {
@@ -343,7 +343,7 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
                     Fase.CONSOLIDACION -> "Consolidación"
                     Fase.AUTOMATICO -> "Automático"
                 }
-                Text("AGUA", style = MaterialTheme.typography.titleMedium)
+                Text("AGUA", style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
                 Text("$nombreFase · día $dia", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
                 if (e.metaSiguiente != null) {
                     BarraRom(dia.toFloat() / e.metaSiguiente)
@@ -404,7 +404,7 @@ private fun TarjetaAgua(estado: AguaEstado?, alAbrir: () -> Unit, alCambiar: (In
 private fun TarjetaAnimo(valor: Int?, alAbrir: () -> Unit, alElegir: (Int) -> Unit) {
     TarjetaRom(alTocar = alAbrir, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("ÁNIMO", style = MaterialTheme.typography.titleMedium)
+            Text("ÁNIMO", style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
             Text("¿Cómo te sentís hoy?", style = MaterialTheme.typography.bodyLarge)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 CARITAS.forEachIndexed { i, carita ->

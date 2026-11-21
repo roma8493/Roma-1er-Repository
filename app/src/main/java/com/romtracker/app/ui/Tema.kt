@@ -18,7 +18,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import com.romtracker.app.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
@@ -43,14 +47,15 @@ import androidx.compose.ui.graphics.Shape
  * Única fuente de colores, formas y tipografía; las pantallas no definen los suyos.
  */
 object Paleta {
-    val Fondo = Color(0xFFF2F2F7)        // gris muy claro
-    val Tarjeta = Color(0xFFFFFFFF)
-    val Texto = Color(0xFF1C1C1E)        // contraste alto
-    val TextoSecundario = Color(0xFF636366)
-    val Acento = Color(0xFF0A60C2)       // único azul sobrio
+    val Fondo = Color(0xFFFDF8F0)        // crema cálido
+    val Tarjeta = Color(0xFFF6EBDD)      // beige
+    val Texto = Color(0xFF1F1B16)        // contraste alto
+    val TextoSecundario = Color(0xFF5F5A52)
+    val Titulo = Color(0xFF7A5A12)       // dorado oliva de los títulos de tarjeta
+    val Acento = Color(0xFF4C6B43)       // verde oliva (botones, barras)
     val SobreAcento = Color(0xFFFFFFFF)
-    val Pista = Color(0xFFE5E5EA)        // fondo de barras y bordes suaves
-    val Borde = Color(0xFFC7C7CC)
+    val Pista = Color(0xFFD9D5CC)        // fondo de barras y bordes suaves
+    val Borde = Color(0xFFC9BFAE)
     val Verde = Color(0xFF1E8A3C)        // ✓
     val Ambar = Color(0xFFB26A00)        // atención
     val Rojo = Color(0xFFC03A2B)         // ✗ suave
@@ -83,17 +88,26 @@ private val Formas = Shapes(
     extraLarge = RoundedCornerShape(28.dp),
 )
 
+/** Figtree (variable) incluida en el APK: funciona sin Internet. */
+private val Figtree = FontFamily(
+    listOf(
+        FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold,
+    ).map { peso ->
+        Font(R.font.figtree, weight = peso, variationSettings = FontVariation.Settings(FontVariation.weight(peso.weight)))
+    }
+)
+
 private val Tipografia = Typography(
-    headlineMedium = TextStyle(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold),
-    titleLarge = TextStyle(fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold),
-    titleMedium = TextStyle(fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold),
-    titleSmall = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
-    bodyLarge = TextStyle(fontSize = 17.sp, lineHeight = 24.sp),
-    bodyMedium = TextStyle(fontSize = 15.sp, lineHeight = 21.sp),
-    bodySmall = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
-    labelLarge = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
-    labelMedium = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
-    labelSmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
+    headlineMedium = TextStyle(fontFamily = Figtree, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold),
+    titleLarge = TextStyle(fontFamily = Figtree, fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold),
+    titleMedium = TextStyle(fontFamily = Figtree, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold),
+    titleSmall = TextStyle(fontFamily = Figtree, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
+    bodyLarge = TextStyle(fontFamily = Figtree, fontSize = 17.sp, lineHeight = 24.sp),
+    bodyMedium = TextStyle(fontFamily = Figtree, fontSize = 15.sp, lineHeight = 21.sp),
+    bodySmall = TextStyle(fontFamily = Figtree, fontSize = 13.sp, lineHeight = 18.sp),
+    labelLarge = TextStyle(fontFamily = Figtree, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+    labelMedium = TextStyle(fontFamily = Figtree, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
+    labelSmall = TextStyle(fontFamily = Figtree, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
 )
 
 @Composable
@@ -101,7 +115,7 @@ fun TemaRomTracker(contenido: @Composable () -> Unit) {
     MaterialTheme(colorScheme = Esquema, shapes = Formas, typography = Tipografia, content = contenido)
 }
 
-/** Tarjeta blanca de esquinas ~20 dp con sombra suave. [alTocar] null = no clicable. */
+/** Tarjeta beige de esquinas ~20 dp con sombra suave. [alTocar] null = no clicable. */
 @Composable
 fun TarjetaRom(
     modifier: Modifier = Modifier,
@@ -144,7 +158,7 @@ fun BarraRom(avance: Float, modifier: Modifier = Modifier) {
     }
 }
 
-/** Campo de texto del tema: fondo blanco, esquinas redondeadas, borde gris que pasa a azul al enfocar. */
+/** Campo de texto del tema: fondo beige, esquinas redondeadas, borde que pasa a verde al enfocar. */
 @Composable
 fun CampoRom(
     value: String,
@@ -182,7 +196,7 @@ fun CampoRom(
     )
 }
 
-/** Botón grande y redondeado (alto ≥ 56 dp). [destacado] = relleno azul; si no, contorno suave. */
+/** Botón grande y redondeado (alto ≥ 56 dp). [destacado] = relleno verde; si no, contorno suave. */
 @Composable
 fun BotonRom(
     texto: String,
