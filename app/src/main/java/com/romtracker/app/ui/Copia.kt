@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -110,22 +107,24 @@ fun PantallaCopia(db: AppDatabase, alVolver: () -> Unit, alRestaurar: (Perfil) -
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        TextButton(onClick = alVolver) { Text("← Copia de seguridad", style = MaterialTheme.typography.titleLarge) }
+        TextButton(onClick = alVolver) { Text("← Copia de seguridad", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto) }
 
-        Text(
-            "Tus datos viven solo en este celular. Si desinstalás la app se borran, " +
-                "así que guardá una copia de vez en cuando."
-        )
+        TarjetaRom(Modifier.fillMaxWidth()) {
+            Text(
+                "Tus datos viven solo en este celular. Si desinstalás la app se borran, " +
+                    "así que guardá una copia de vez en cuando.",
+                modifier = Modifier.padding(20.dp),
+                color = Paleta.TextoSecundario,
+            )
+        }
 
-        Button(
-            onClick = { guardar.launch("romtracker-copia-${LocalDate.now()}.json") },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-        ) { Text("Guardar copia") }
+        BotonRom("Guardar copia", Modifier.fillMaxWidth()) {
+            guardar.launch("romtracker-copia-${LocalDate.now()}.json")
+        }
 
-        OutlinedButton(
-            onClick = { elegir.launch(arrayOf("*/*")) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-        ) { Text("Restaurar copia") }
+        BotonRom("Restaurar copia", Modifier.fillMaxWidth(), destacado = false) {
+            elegir.launch(arrayOf("*/*"))
+        }
 
         mensaje?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
     }

@@ -12,14 +12,29 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerState
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.graphics.Shape
 
@@ -53,6 +68,8 @@ private val Esquema: ColorScheme = lightColorScheme(
     surfaceVariant = Paleta.Pista,
     onSurfaceVariant = Paleta.TextoSecundario,
     surfaceContainerHighest = Paleta.Tarjeta,
+    surfaceContainerHigh = Paleta.Tarjeta, // fondo de los diálogos
+    surfaceTint = Color.Transparent,
     outline = Paleta.Borde,
     outlineVariant = Paleta.Pista,
     error = Paleta.Rojo,
@@ -124,5 +141,82 @@ fun BarraRom(avance: Float, modifier: Modifier = Modifier) {
                 .clip(forma)
                 .background(Paleta.Acento)
         )
+    }
+}
+
+/** Campo de texto del tema: fondo blanco, esquinas redondeadas, borde gris que pasa a azul al enfocar. */
+@Composable
+fun CampoRom(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label: (@Composable () -> Unit)? = null,
+    placeholder: (@Composable () -> Unit)? = null,
+    supportingText: (@Composable () -> Unit)? = null,
+    singleLine: Boolean = false,
+    minLines: Int = 1,
+    isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        label = label,
+        placeholder = placeholder,
+        supportingText = supportingText,
+        singleLine = singleLine,
+        minLines = minLines,
+        isError = isError,
+        keyboardOptions = keyboardOptions,
+        shape = MaterialTheme.shapes.medium,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Paleta.Tarjeta,
+            unfocusedContainerColor = Paleta.Tarjeta,
+            focusedBorderColor = Paleta.Acento,
+            unfocusedBorderColor = Paleta.Borde,
+            focusedLabelColor = Paleta.Acento,
+            unfocusedLabelColor = Paleta.TextoSecundario,
+            cursorColor = Paleta.Acento,
+        ),
+    )
+}
+
+/** Botón grande y redondeado (alto ≥ 56 dp). [destacado] = relleno azul; si no, contorno suave. */
+@Composable
+fun BotonRom(
+    texto: String,
+    modifier: Modifier = Modifier,
+    destacado: Boolean = true,
+    habilitado: Boolean = true,
+    alTocar: () -> Unit,
+) {
+    val m = modifier.heightIn(min = 56.dp)
+    val forma = MaterialTheme.shapes.medium
+    if (destacado) {
+        Button(
+            onClick = alTocar, enabled = habilitado, modifier = m, shape = forma,
+            colors = ButtonDefaults.buttonColors(containerColor = Paleta.Acento, contentColor = Paleta.SobreAcento),
+        ) { Text(texto, style = MaterialTheme.typography.titleSmall) }
+    } else {
+        OutlinedButton(
+            onClick = alTocar, enabled = habilitado, modifier = m, shape = forma,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
+            border = BorderStroke(1.dp, Paleta.Borde),
+        ) { Text(texto, style = MaterialTheme.typography.titleSmall) }
+    }
+}
+
+/** Selector de hora dentro de una tarjeta, con la esfera en gris claro. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RelojRom(estado: TimePickerState) {
+    TarjetaRom(Modifier.fillMaxWidth()) {
+        Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+            TimePicker(
+                state = estado,
+                colors = TimePickerDefaults.colors(clockDialColor = Paleta.Fondo),
+            )
+        }
     }
 }

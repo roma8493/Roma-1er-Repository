@@ -5,18 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,9 +47,9 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        TextButton(onClick = alVolver) { Text("← Ajustes", style = MaterialTheme.typography.titleLarge) }
+        TextButton(onClick = alVolver) { Text("← Ajustes", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto) }
 
-        OutlinedTextField(
+        CampoRom(
             value = nombre,
             onValueChange = { nombre = it },
             label = { Text("Tu nombre") },
@@ -63,17 +59,17 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
         )
 
         Text("Hora de salida del trabajo", style = MaterialTheme.typography.titleMedium)
-        TimePicker(state = reloj)
+        RelojRom(reloj)
 
-        OutlinedTextField(
+        CampoRom(
             value = ancla,
             onValueChange = { ancla = it },
             label = { Text("Clave ancla: Después de…") },
             modifier = Modifier.fillMaxWidth(),
         )
-        if (ancla.isNotBlank()) Text("Después de ${ancla.trim()}, voy al gym.")
+        if (ancla.isNotBlank()) Text("Después de ${ancla.trim()}, voy al gym.", color = Paleta.TextoSecundario)
 
-        OutlinedTextField(
+        CampoRom(
             value = porQue,
             onValueChange = { porQue = it },
             label = { Text("¿Por qué es importante para vos?") },
@@ -81,7 +77,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
-        OutlinedTextField(
+        CampoRom(
             value = metaAgua,
             onValueChange = { metaAgua = it.filter(Char::isDigit).take(2) },
             label = { Text("Meta de vasos de agua por día (1 a 30)") },
@@ -92,9 +88,11 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Button(
-            enabled = valido,
-            onClick = {
+        BotonRom(
+            texto = "Guardar cambios",
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = valido,
+            alTocar = {
                 alGuardar(
                     Perfil(
                         nombre = nombre.trim(),
@@ -105,7 +103,6 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit) {
                     )
                 )
             },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-        ) { Text("Guardar cambios") }
+        )
     }
 }

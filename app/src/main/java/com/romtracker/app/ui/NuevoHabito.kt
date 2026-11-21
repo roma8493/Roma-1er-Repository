@@ -6,15 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,9 +44,9 @@ fun NuevoHabito(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        TextButton(onClick = alVolver) { Text("← Nuevo hábito", style = MaterialTheme.typography.titleLarge) }
+        TextButton(onClick = alVolver) { Text("← Nuevo hábito", style = MaterialTheme.typography.titleLarge, color = Paleta.Texto) }
 
-        OutlinedTextField(
+        CampoRom(
             value = nombre,
             onValueChange = { nombre = it },
             label = { Text("Nombre del hábito") },
@@ -69,9 +65,10 @@ fun NuevoHabito(
             if (tipo == TipoPropio.HACER) "Cada día marcás si lo hiciste. ✓ = lo hice."
             else "Cada día marcás si lo hiciste. ✓ = ese día no lo hice, y esos días suman a tu racha.",
             style = MaterialTheme.typography.bodySmall,
+            color = Paleta.TextoSecundario,
         )
 
-        OutlinedTextField(
+        CampoRom(
             value = ancla,
             onValueChange = { ancla = it },
             label = { Text("Clave ancla: Después de…") },
@@ -79,7 +76,7 @@ fun NuevoHabito(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        OutlinedTextField(
+        CampoRom(
             value = porQue,
             onValueChange = { porQue = it },
             label = { Text("¿Por qué es importante para vos?") },
@@ -87,17 +84,16 @@ fun NuevoHabito(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Button(
-            enabled = valido,
-            onClick = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim()) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-        ) { Text("Crear hábito") }
+        BotonRom(
+            texto = "Crear hábito",
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = valido,
+            alTocar = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim()) },
+        )
     }
 }
 
 @Composable
 private fun OpcionTipo(texto: String, elegido: Boolean, modifier: Modifier, alTocar: () -> Unit) {
-    val m = modifier.heightIn(min = 56.dp)
-    if (elegido) Button(onClick = alTocar, modifier = m) { Text(texto) }
-    else OutlinedButton(onClick = alTocar, modifier = m) { Text(texto) }
+    BotonRom(texto, modifier, destacado = elegido, alTocar = alTocar)
 }

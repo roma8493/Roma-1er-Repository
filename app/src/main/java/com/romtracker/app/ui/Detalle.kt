@@ -24,7 +24,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -408,9 +407,9 @@ private fun DialogoEditarPropio(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                OutlinedTextField(nombre, { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+                CampoRom(nombre, { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                CampoRom(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
+                CampoRom(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {
