@@ -207,4 +207,28 @@ class CopiaTest {
         )
         assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
     }
+
+    @Test fun idaYVueltaConservaAutomatismos() {
+        val propio = HabitoPropio(3, "Leer", "después de cenar", "Aprender", TipoPropio.HACER, 20000)
+        val conChecks = copia.copy(
+            habitosPropios = listOf(propio),
+            automatismos = listOf(Automatismo(TipoHabito.GYM, 20028, 3, 4, 2, 5), Automatismo(claveRegistroPropio(3), 20030, 1, 1, 2, 2)),
+        )
+        assertEquals(conChecks, CopiaJson.deTexto(CopiaJson.aTexto(conChecks)))
+    }
+
+    @Test fun copiaViejaSinAutomatismosSeRestauraConListaVacia() {
+        val texto = org.json.JSONObject(CopiaJson.aTexto(copia)).apply { remove("automatismos"); put("version", 8) }.toString()
+        assertTrue(CopiaJson.deTexto(texto).automatismos.isEmpty())
+    }
+
+    @Test fun automatismoFueraDeRangoSeRechaza() {
+        val mala = copia.copy(automatismos = listOf(Automatismo(TipoHabito.GYM, 20028, 3, 6, 2, 5)))
+        assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
+    }
+
+    @Test fun automatismoDeHabitoDesconocidoSeRechaza() {
+        val mala = copia.copy(automatismos = listOf(Automatismo(claveRegistroPropio(99), 20028, 3, 3, 3, 3)))
+        assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
+    }
 }

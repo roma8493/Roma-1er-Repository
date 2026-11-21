@@ -111,6 +111,20 @@ data class HabitoPropio(
     @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
 )
 
+/**
+ * Check de automatismo (R6) de un hábito HACER: 4 respuestas de 1 ("nada automático") a 5 ("totalmente automático").
+ * [habito] usa la misma clave que `registro.habito` (GYM, COMIDA, AGUA o PROPIO_<id>). Un check por hábito y día.
+ */
+@Entity(tableName = "automatismo", primaryKeys = ["habito", "fecha"])
+data class Automatismo(
+    val habito: String,
+    val fecha: Long,
+    val r1: Int,
+    val r2: Int,
+    val r3: Int,
+    val r4: Int,
+)
+
 object TipoPropio {
     const val HACER = "HACER"
     const val DEJAR = "DEJAR"

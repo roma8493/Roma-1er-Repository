@@ -184,3 +184,23 @@ interface HabitoPropioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(habitos: List<HabitoPropio>)
 }
+
+@Dao
+interface AutomatismoDao {
+    @Query("SELECT * FROM automatismo ORDER BY fecha")
+    suspend fun todos(): List<Automatismo>
+
+    /** Un check por hábito y día: si ya había uno ese día, se reemplaza. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardar(check: Automatismo)
+
+    /** Al borrar un hábito propio se borran también sus checks. */
+    @Query("DELETE FROM automatismo WHERE habito = :habito")
+    suspend fun borrarDeHabito(habito: String)
+
+    @Query("DELETE FROM automatismo")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(checks: List<Automatismo>)
+}
