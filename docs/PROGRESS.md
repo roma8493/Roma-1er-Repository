@@ -6,7 +6,7 @@
 - **Nombre**: RomTracker
 - **Objetivo**: App Android (APK sin Play Store) de hábitos basada en ciencia, para usuarios que solo pueden actuar después del trabajo.
 - **Tecnología**: Kotlin + Jetpack Compose + Room; compila GitHub Actions (ver Etapa 3 en `docs/SPEC.md`).
-- **Versión actual**: 0.5.2 (versionCode 17; T21 implementada, pendiente de probar en el A34: Bienvenida, Nuevo hábito, Ajustes, Copia y diálogos). Antes 0.5.1 (T20 confirmada por el usuario 2026-11-21). Antes 0.5.0 (versionCode 15; T19 confirmada por el usuario en el A34 (2026-11-21): tema central + Hoy rediseñado). Antes 0.4.1 (versionCode 14; hábitos propios: crear + tarjetas + Detalle + editar/borrar). Versión 0.4 CERRADA (2026-11-20). Antes 0.4.0 (versionCode 13; sin editar/borrar). Antes 0.2.5 (versionCode 12; cruce ánimo–hábitos). Versión 0.3 (agua + ánimo + cruce) CERRADA y confirmada por el usuario en el A34 (2026-11-20).
+- **Versión actual**: 0.5.2 (versionCode 17; T21 confirmada por el usuario en el A34 (2026-11-21): Bienvenida, Nuevo hábito, Ajustes, Copia y diálogos). Versión 0.5 CERRADA. Antes 0.5.1 (T20 confirmada por el usuario 2026-11-21). Antes 0.5.0 (versionCode 15; T19 confirmada por el usuario en el A34 (2026-11-21): tema central + Hoy rediseñado). Antes 0.4.1 (versionCode 14; hábitos propios: crear + tarjetas + Detalle + editar/borrar). Versión 0.4 CERRADA (2026-11-20). Antes 0.4.0 (versionCode 13; sin editar/borrar). Antes 0.2.5 (versionCode 12; cruce ánimo–hábitos). Versión 0.3 (agua + ánimo + cruce) CERRADA y confirmada por el usuario en el A34 (2026-11-20).
 - **Estado**: Fases 1 y 2 completadas. Fase 3 completa (Etapas 1–3 aprobadas en `docs/SPEC.md`). Fase 4 completa: T4–T9 hechas. MVP 0.1.0 cerrado.
 
 ## Última Actualización
@@ -69,4 +69,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Esperar Action en verde, instalar 0.5.2 en el A34 y confirmar T21 y los criterios de 0.5. Con eso se cierra la versión 0.5 (todas las tareas de la SPEC hechas): proponer nueva SPEC o dar el proyecto por terminado.
+- Versión 0.5 cerrada: todas las tareas de `docs/SPEC.md` están hechas. Decidir con el usuario: nueva SPEC (nueva versión) o dar el proyecto por terminado.

@@ -186,4 +186,4 @@
 ### Tareas 0.5
 - [x] T19: Tema central (`ui/Tema.kt`: colores, formas, tipografía, fondo claro) aplicado en `MainActivity.kt` + rediseño de Hoy (tarjetas Gym/Comida/Agua/Ánimo/propios y checklist). Versión 0.5.0. Verifica en el celular.
 - [x] T20: Rediseño de Detalle de hábito (calendario, barra de fase, estadísticas) y Detalle de ánimo. Versión 0.5.1. Verifica en el celular.
-- [ ] T21: Rediseño de Bienvenida, Nuevo hábito, Ajustes y Copia + diálogos. Versión 0.5.2. Verifica en el celular.
+- [x] T21: Rediseño de Bienvenida, Nuevo hábito, Ajustes y Copia + diálogos. Versión 0.5.2. Verifica en el celular.
