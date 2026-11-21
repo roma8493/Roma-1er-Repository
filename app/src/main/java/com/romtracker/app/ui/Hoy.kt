@@ -47,6 +47,7 @@ import com.romtracker.app.logic.cumplidoAgua
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estaHecho
 import com.romtracker.app.logic.estadoDeFase
+import com.romtracker.app.logic.habitosQueTocan
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -73,6 +74,9 @@ fun Hoy(
     alAbrirAjustes: () -> Unit,
     alNuevoHabito: () -> Unit,
     alAbrirResumen: () -> Unit,
+    alHacerCheck: (String) -> Unit,
+    pospuestos: String,
+    alPosponerCheck: (String) -> Unit,
 ) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
@@ -88,6 +92,8 @@ fun Hoy(
     var itemsChecklist by remember { mutableStateOf<List<ChecklistItem>>(emptyList()) }
     var anoche by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
     var paraManana by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
+    // Hábitos HACER a los que hoy les toca el check de automatismo: clave → nombre (R6).
+    var tocaCheck by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
     suspend fun cargarHabito(tipo: String): TarjetaEstado? {
         val habito = db.habitoDao().obtener(tipo) ?: return null
@@ -130,6 +136,18 @@ fun Hoy(
         itemsChecklist = db.checklistItemDao().todos()
         anoche = db.checklistMarcaDao().deDia(fecha.toEpochDay())
         paraManana = db.checklistMarcaDao().deDia(fecha.plusDays(1).toEpochDay())
+
+        // Check de automatismo: solo hábitos HACER (Gym, Comida, Agua y propios HACER); no Ánimo ni DEJAR.
+        val hacer = listOfNotNull(
+            db.habitoDao().obtener(TipoHabito.GYM)?.let { Triple(TipoHabito.GYM, "Gym", it.fechaInicio) },
+            db.habitoDao().obtener(TipoHabito.COMIDA)?.let { Triple(TipoHabito.COMIDA, "Comida", it.fechaInicio) },
+            db.habitoDao().obtener(TipoHabito.AGUA)?.let { Triple(TipoHabito.AGUA, "Agua", it.fechaInicio) },
+        ) + propios.filter { (p, _) -> p.tipo == TipoPropio.HACER }
+            .map { (p, _) -> Triple(claveRegistroPropio(p.id), p.nombre, p.fechaInicio) }
+        val claves = habitosQueTocan(
+            hacer.map { it.first to it.third }, db.automatismoDao().todos(), fecha.toEpochDay(),
+        )
+        tocaCheck = claves.mapNotNull { c -> hacer.firstOrNull { it.first == c }?.let { c to it.second } }
     }
 
     fun registrar(tipo: String, cumplido: Boolean) {
@@ -195,6 +213,16 @@ fun Hoy(
             TextButton(onClick = alAbrirAjustes) { Text("Ajustes") }
             TextButton(onClick = alAbrirCopia) { Text("Copia") }
             TextButton(onClick = alNuevoHabito) { Text("Nuevo hábito") }
+        }
+
+        // Una invitación a la vez, para no llenar la pantalla; "Después" pasa a la siguiente o la oculta.
+        val invitacion = tocaCheck.firstOrNull { it.first !in pospuestos.split(",") }
+        if (invitacion != null) {
+            TarjetaInvitacionAutomatismo(
+                nombre = invitacion.second,
+                alHacer = { alHacerCheck(invitacion.first) },
+                alPosponer = { alPosponerCheck(invitacion.first) },
+            )
         }
 
         TarjetaHabito(

@@ -25,7 +25,9 @@ import com.romtracker.app.ui.Ajustes
 import com.romtracker.app.ui.Bienvenida
 import com.romtracker.app.ui.Detalle
 import com.romtracker.app.ui.DetalleAnimo
+import com.romtracker.app.ui.CheckAutomatismo
 import com.romtracker.app.ui.Hoy
+import com.romtracker.app.ui.PREFIJO_AUTOMATISMO
 import com.romtracker.app.ui.NuevoHabito
 import com.romtracker.app.ui.PantallaCopia
 import com.romtracker.app.ui.Resumen
@@ -53,6 +55,8 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     // null = pantalla Hoy; si no, el tipo de hábito cuyo Detalle se ve
                     var abierto by rememberSaveable { mutableStateOf<String?>(null) }
+                    // Claves de hábitos cuyo check de automatismo se dejó "para después" (separadas por coma).
+                    var pospuestos by rememberSaveable { mutableStateOf("") }
 
                     LaunchedEffect(Unit) {
                         perfil = db.perfilDao().obtener()
@@ -80,6 +84,14 @@ class MainActivity : ComponentActivity() {
                             alAbrirAjustes = { abierto = PANTALLA_AJUSTES },
                             alNuevoHabito = { abierto = PANTALLA_NUEVO_HABITO },
                             alAbrirResumen = { abierto = PANTALLA_RESUMEN },
+                            alHacerCheck = { abierto = PREFIJO_AUTOMATISMO + it },
+                            pospuestos = pospuestos,
+                            alPosponerCheck = { pospuestos = if (pospuestos.isEmpty()) it else "$pospuestos,$it" },
+                        )
+                        abierto!!.startsWith(PREFIJO_AUTOMATISMO) -> CheckAutomatismo(
+                            db,
+                            clave = abierto!!.removePrefix(PREFIJO_AUTOMATISMO),
+                            alVolver = { abierto = null },
                         )
                         abierto == PANTALLA_RESUMEN -> Resumen(
                             db,

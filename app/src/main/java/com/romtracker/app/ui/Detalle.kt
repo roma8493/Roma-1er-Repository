@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Agua
 import com.romtracker.app.data.AppDatabase
+import com.romtracker.app.data.Automatismo
 import com.romtracker.app.data.HabitoPropio
 import com.romtracker.app.data.PREFIJO_PROPIO
 import com.romtracker.app.data.Perfil
@@ -50,6 +51,7 @@ import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.Registros
 import com.romtracker.app.logic.ajustarVasos
+import com.romtracker.app.logic.checksDeHabito
 import com.romtracker.app.logic.consistencia
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.esEditable
@@ -89,8 +91,10 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var registros by remember { mutableStateOf<Registros>(emptyMap()) }
     var aguas by remember { mutableStateOf<Map<LocalDate, Agua>>(emptyMap()) }
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
+    var checks by remember { mutableStateOf<List<Automatismo>>(emptyList()) }
 
     suspend fun cargar() {
+        checks = db.automatismoDao().todos()
         if (esPropio) {
             // Hábito propio: los registros guardan el ✓ ya resuelto según el tipo.
             val id = tipo.removePrefix(PREFIJO_PROPIO).toLongOrNull()
@@ -332,6 +336,11 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     if (perfil.versionMinima.isNotBlank()) Text("Versión mínima: ${perfil.versionMinima}", color = Paleta.TextoSecundario)
                 }
             }
+        }
+
+        // R6: el check de automatismo es solo para hábitos HACER (no para los propios de tipo DEJAR).
+        if (!esPropio || (propio != null && !dejar)) {
+            TarjetaAutomatismoDetalle(checksDeHabito(tipo, checks))
         }
     }
 }
