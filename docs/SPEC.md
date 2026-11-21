@@ -184,6 +184,6 @@
 - Criterios: (1) todas las pantallas usan el mismo tema (colores, esquinas, tipografía) desde un único archivo; (2) nada se corta ni se solapa en el A34 (incluida la barra de estado); (3) todo funciona igual que en 0.4.1 (registrar, editar, borrar, copia); (4) instalar encima de 0.4.1 no pierde datos; (5) el usuario confirma que "se ve premium".
 
 ### Tareas 0.5
-- [ ] T19: Tema central (`ui/Tema.kt`: colores, formas, tipografía, fondo claro) aplicado en `MainActivity.kt` + rediseño de Hoy (tarjetas Gym/Comida/Agua/Ánimo/propios y checklist). Versión 0.5.0. Verifica en el celular.
+- [x] T19: Tema central (`ui/Tema.kt`: colores, formas, tipografía, fondo claro) aplicado en `MainActivity.kt` + rediseño de Hoy (tarjetas Gym/Comida/Agua/Ánimo/propios y checklist). Versión 0.5.0. Verifica en el celular.
 - [ ] T20: Rediseño de Detalle de hábito (calendario, barra de fase, estadísticas) y Detalle de ánimo. Versión 0.5.1. Verifica en el celular.
 - [ ] T21: Rediseño de Bienvenida, Nuevo hábito, Ajustes y Copia + diálogos. Versión 0.5.2. Verifica en el celular.
