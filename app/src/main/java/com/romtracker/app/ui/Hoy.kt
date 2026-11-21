@@ -48,6 +48,7 @@ import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estaHecho
 import com.romtracker.app.logic.estadoDeFase
 import com.romtracker.app.logic.habitosQueTocan
+import com.romtracker.app.logic.tocaRevision
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -77,6 +78,7 @@ fun Hoy(
     alHacerCheck: (String) -> Unit,
     pospuestos: String,
     alPosponerCheck: (String) -> Unit,
+    alAbrirRevision: () -> Unit,
 ) {
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
@@ -93,6 +95,8 @@ fun Hoy(
     var anoche by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
     var paraManana by remember { mutableStateOf<List<ChecklistMarca>>(emptyList()) }
     // Hábitos HACER a los que hoy les toca el check de automatismo: clave → nombre (R6).
+    // ¿Toca la revisión semanal (R9)?
+    var tocaRev by remember { mutableStateOf(false) }
     var tocaCheck by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
     suspend fun cargarHabito(tipo: String): TarjetaEstado? {
@@ -148,6 +152,12 @@ fun Hoy(
             hacer.map { it.first to it.third }, db.automatismoDao().todos(), fecha.toEpochDay(),
         )
         tocaCheck = claves.mapNotNull { c -> hacer.firstOrNull { it.first == c }?.let { c to it.second } }
+
+        // Revisión semanal: cuenta desde el primer hábito de cualquier tipo (también los DEJAR).
+        val inicios = hacer.map { it.third } + propios.filter { (p, _) -> p.tipo == TipoPropio.DEJAR }.map { (p, _) -> p.fechaInicio }
+        val primero = inicios.minOrNull()
+        tocaRev = primero != null &&
+            tocaRevision(primero, db.revisionDao().todas().maxOfOrNull { it.semana }, fecha.toEpochDay())
     }
 
     fun registrar(tipo: String, cumplido: Boolean) {
@@ -222,6 +232,12 @@ fun Hoy(
                 nombre = invitacion.second,
                 alHacer = { alHacerCheck(invitacion.first) },
                 alPosponer = { alPosponerCheck(invitacion.first) },
+            )
+        } else if (tocaRev && CLAVE_REVISION !in pospuestos.split(",")) {
+            // La revisión espera a que no haya un check pendiente, para mostrar una sola invitación a la vez.
+            TarjetaInvitacionRevision(
+                alHacer = alAbrirRevision,
+                alPosponer = { alPosponerCheck(CLAVE_REVISION) },
             )
         }
 
@@ -303,6 +319,9 @@ fun Hoy(
                 }
             }
         }
+
+        // Acceso fijo a la revisión semanal (R9) y a las anteriores, aunque no haya invitación.
+        TextButton(onClick = alAbrirRevision, modifier = Modifier.fillMaxWidth()) { Text("Revisión semanal ›") }
     }
 
     if (editandoChecklist) {
