@@ -189,4 +189,4 @@
 - [x] T21: Rediseño de Bienvenida, Nuevo hábito, Ajustes y Copia + diálogos. Versión 0.5.2. Verifica en el celular.
 
 ## Versión 0.6 — Resumen global (pedido del usuario 2026-11-21)
-- [ ] T22: Pantalla "Resumen" (`ui/Resumen.kt`, botón en Hoy): cuadro con todos los hábitos (Gym, Comida, Agua, propios, Ánimo) × últimos 5 días, ✓/✕/vacío, navegación ‹ Antes / Después › de a 5 días, tocar un nombre abre su Detalle. Solo lectura, sin migración. Versión 0.6.0. Verifica en el celular.
+- [x] T22: Pantalla "Resumen" (`ui/Resumen.kt`, botón en Hoy): cuadro con todos los hábitos (Gym, Comida, Agua, propios, Ánimo) × últimos 5 días, ✓/✕/vacío, navegación ‹ Antes / Después › de a 5 días, tocar un nombre abre su Detalle. Solo lectura, sin migración. Versión 0.6.0. Verifica en el celular.
