@@ -14,28 +14,24 @@ data class Perfil(
     val porQue: String,
     /** Meta diaria de vasos de agua. Rige para los días nuevos; cada día guarda la suya en [Agua.meta]. */
     @ColumnInfo(defaultValue = "8") val metaAgua: Int = 8,
-    /** Tema de la app: [TemaPerfil.SISTEMA] (0), [TemaPerfil.CLARO] (1) u [TemaPerfil.OSCURO] (2). */
-    @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.SISTEMA,
+    /** Tema de la app: [TemaPerfil.CLARO] (0, por defecto) u [TemaPerfil.OSCURO] (2). */
+    @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.CLARO,
 )
 
-/** Valores de [Perfil.tema] y sus nombres (los nombres se usan en la copia de seguridad). */
+/**
+ * Valores de [Perfil.tema]. Solo hay dos temas; cualquier otro valor guardado (el 0 y el 1 de la
+ * versión 0.8.1, que tenía "Sistema") se trata como claro. Los nombres se usan en la copia.
+ */
 object TemaPerfil {
-    const val SISTEMA = 0
-    const val CLARO = 1
+    const val CLARO = 0
     const val OSCURO = 2
 
-    fun nombre(tema: Int): String = when (tema) {
-        CLARO -> "CLARO"
-        OSCURO -> "OSCURO"
-        else -> "SISTEMA"
-    }
+    fun esOscuro(tema: Int): Boolean = tema == OSCURO
 
-    /** Nombre desconocido o ausente = SISTEMA. */
-    fun deNombre(nombre: String?): Int = when (nombre) {
-        "CLARO" -> CLARO
-        "OSCURO" -> OSCURO
-        else -> SISTEMA
-    }
+    fun nombre(tema: Int): String = if (esOscuro(tema)) "OSCURO" else "CLARO"
+
+    /** Nombre desconocido, ausente o "SISTEMA" (copias 0.8.1) = CLARO. */
+    fun deNombre(nombre: String?): Int = if (nombre == "OSCURO") OSCURO else CLARO
 }
 
 /** [tipo]: "GYM" o "COMIDA". */

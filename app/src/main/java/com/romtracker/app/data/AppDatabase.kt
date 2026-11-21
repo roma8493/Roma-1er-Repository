@@ -92,8 +92,14 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
-    /** Reemplaza TODO lo guardado por la copia, en una sola transacción: o entra todo o no cambia nada. */
-    suspend fun reemplazarTodo(copia: Copia) = withTransaction {
+    /**
+     * Reemplaza TODO lo guardado por la copia, en una sola transacción: o entra todo o no cambia nada.
+     * El tema es una preferencia de este celular: se conserva el que había, no el de la copia.
+     * Devuelve el perfil que quedó guardado.
+     */
+    suspend fun reemplazarTodo(copia: Copia): Perfil = withTransaction {
+        val temaActual = perfilDao().obtener()?.tema ?: TemaPerfil.CLARO
+        val perfil = copia.perfil.copy(tema = temaActual)
         perfilDao().borrarTodo()
         habitoDao().borrarTodo()
         registroDao().borrarTodo()
@@ -103,7 +109,7 @@ abstract class AppDatabase : RoomDatabase() {
         habitoPropioDao().borrarTodo()
         checklistItemDao().borrarTodo()
         checklistMarcaDao().borrarTodo()
-        perfilDao().guardar(copia.perfil)
+        perfilDao().guardar(perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
         checklistDao().insertar(copia.checklists)
@@ -112,6 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
         habitoPropioDao().insertar(copia.habitosPropios)
         checklistItemDao().insertar(copia.checklistItems)
         checklistMarcaDao().insertar(copia.checklistMarcas)
+        perfil
     }
 
     companion object {

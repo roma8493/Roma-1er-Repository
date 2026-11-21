@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
             var cargando by remember { mutableStateOf(true) }
             var perfil by remember { mutableStateOf<Perfil?>(null) }
             val scope = rememberCoroutineScope()
-            TemaRomTracker(perfil?.tema ?: TemaPerfil.SISTEMA) {
+            TemaRomTracker(perfil?.tema ?: TemaPerfil.CLARO) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     // null = pantalla Hoy; si no, el tipo de hábito cuyo Detalle se ve
                     var abierto by rememberSaveable { mutableStateOf<String?>(null) }

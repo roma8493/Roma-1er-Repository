@@ -75,24 +75,26 @@ class CopiaTest {
     }
 
     @Test fun idaYVueltaConservaElTema() {
-        for (tema in listOf(TemaPerfil.SISTEMA, TemaPerfil.CLARO, TemaPerfil.OSCURO)) {
+        for (tema in listOf(TemaPerfil.CLARO, TemaPerfil.OSCURO)) {
             val c = copia.copy(perfil = copia.perfil.copy(tema = tema))
             assertEquals(tema, CopiaJson.deTexto(CopiaJson.aTexto(c)).perfil.tema)
         }
     }
 
-    @Test fun copiaViejaSinTemaSeRestauraConTemaSistema() {
+    @Test fun copiaViejaSinTemaSeRestauraConTemaClaro() {
         val raiz = org.json.JSONObject(CopiaJson.aTexto(copia.copy(perfil = copia.perfil.copy(tema = TemaPerfil.OSCURO))))
         raiz.getJSONObject("perfil").remove("tema")
         raiz.put("version", 6)
         val leida = CopiaJson.deTexto(raiz.toString())
-        assertEquals(TemaPerfil.SISTEMA, leida.perfil.tema)
+        assertEquals(TemaPerfil.CLARO, leida.perfil.tema)
         assertEquals(copia, leida)
     }
 
-    @Test fun temaDesconocidoSeLeeComoSistema() {
-        assertEquals(TemaPerfil.SISTEMA, TemaPerfil.deNombre("VIOLETA"))
-        assertEquals(TemaPerfil.SISTEMA, TemaPerfil.deNombre(null))
+    @Test fun temaSistemaDeLaCopia081SeLeeComoClaro() {
+        assertEquals(TemaPerfil.CLARO, TemaPerfil.deNombre("SISTEMA"))
+        assertEquals(TemaPerfil.CLARO, TemaPerfil.deNombre("VIOLETA"))
+        assertEquals(TemaPerfil.CLARO, TemaPerfil.deNombre(null))
+        assertEquals(TemaPerfil.OSCURO, TemaPerfil.deNombre("OSCURO"))
     }
 
     @Test fun faltanCamposSeRechaza() {

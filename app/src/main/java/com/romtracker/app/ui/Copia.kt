@@ -144,8 +144,8 @@ fun PantallaCopia(db: AppDatabase, alVolver: () -> Unit, alRestaurar: (Perfil) -
                     pendiente = null
                     scope.launch {
                         try {
-                            db.reemplazarTodo(copia)
-                            alRestaurar(copia.perfil)
+                            val guardado = db.reemplazarTodo(copia)
+                            alRestaurar(guardado)
                         } catch (e: Exception) {
                             mensaje = "No pude restaurar la copia. Tus datos no cambiaron."
                         }

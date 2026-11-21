@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +26,6 @@ import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.TemaPerfil
 
 /** Pantalla de Ajustes: edita los 4 datos de la Bienvenida. No toca registros, fase ni consistencia. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, alCambiarTema: (Int) -> Unit) {
     BackHandler(onBack = alVolver)
@@ -37,11 +34,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
     var ancla by rememberSaveable { mutableStateOf(perfil.claveAncla) }
     var porQue by rememberSaveable { mutableStateOf(perfil.porQue) }
     var metaAgua by rememberSaveable { mutableStateOf(perfil.metaAgua.toString()) }
-    val reloj = rememberTimePickerState(
-        initialHour = perfil.horaSalidaMinutos / 60,
-        initialMinute = perfil.horaSalidaMinutos % 60,
-        is24Hour = true,
-    )
+    var horaSalida by rememberSaveable { mutableStateOf(perfil.horaSalidaMinutos) }
     val metaValida = metaAgua.toIntOrNull()?.let { it in 1..30 } == true
     val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank() && metaValida
 
@@ -53,12 +46,12 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
 
         Text("Tema", style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            listOf(TemaPerfil.SISTEMA to "Sistema", TemaPerfil.CLARO to "Claro", TemaPerfil.OSCURO to "Oscuro")
+            listOf(TemaPerfil.CLARO to "Claro", TemaPerfil.OSCURO to "Oscuro")
                 .forEach { (valor, texto) ->
                     BotonRom(
                         texto = texto,
                         modifier = Modifier.weight(1f),
-                        destacado = perfil.tema == valor,
+                        destacado = TemaPerfil.esOscuro(perfil.tema) == TemaPerfil.esOscuro(valor),
                         alTocar = { alCambiarTema(valor) },
                     )
                 }
@@ -74,7 +67,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
         )
 
         Text("Hora de salida del trabajo", style = MaterialTheme.typography.titleMedium)
-        RelojRom(reloj)
+        HoraSalidaRom(horaSalida) { horaSalida = it }
 
         CampoRom(
             value = ancla,
@@ -111,7 +104,7 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
                 alGuardar(
                     perfil.copy(
                         nombre = nombre.trim(),
-                        horaSalidaMinutos = reloj.hour * 60 + reloj.minute,
+                        horaSalidaMinutos = horaSalida,
                         claveAncla = ancla.trim(),
                         porQue = porQue.trim(),
                         metaAgua = metaAgua.toInt(),

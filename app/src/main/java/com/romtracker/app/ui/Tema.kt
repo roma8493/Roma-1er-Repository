@@ -17,7 +17,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.romtracker.app.data.TemaPerfil
@@ -37,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -166,14 +168,10 @@ private val Tipografia = Typography(
     labelSmall = TextStyle(fontFamily = Figtree, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
 )
 
-/** [tema] = valor de `Perfil.tema` (Sistema / Claro / Oscuro). */
+/** [tema] = valor de `Perfil.tema` (Claro / Oscuro). */
 @Composable
-fun TemaRomTracker(tema: Int = TemaPerfil.SISTEMA, contenido: @Composable () -> Unit) {
-    val oscuro = when (tema) {
-        TemaPerfil.OSCURO -> true
-        TemaPerfil.CLARO -> false
-        else -> isSystemInDarkTheme()
-    }
+fun TemaRomTracker(tema: Int = TemaPerfil.CLARO, contenido: @Composable () -> Unit) {
+    val oscuro = TemaPerfil.esOscuro(tema)
     val colores = if (oscuro) ColoresOscuros else ColoresClaros
     val vista = LocalView.current
     if (!vista.isInEditMode) {
@@ -282,20 +280,24 @@ fun BotonRom(
     modifier: Modifier = Modifier,
     destacado: Boolean = true,
     habilitado: Boolean = true,
+    compacto: Boolean = false,
     alTocar: () -> Unit,
 ) {
     val m = modifier.heightIn(min = 56.dp)
+    val relleno = if (compacto) PaddingValues(horizontal = 4.dp) else ButtonDefaults.ContentPadding
     val forma = MaterialTheme.shapes.medium
     if (destacado) {
         Button(
             onClick = alTocar, enabled = habilitado, modifier = m, shape = forma,
             colors = ButtonDefaults.buttonColors(containerColor = Paleta.Acento, contentColor = Paleta.SobreAcento),
+            contentPadding = relleno,
         ) { Text(texto, style = MaterialTheme.typography.titleSmall) }
     } else {
         OutlinedButton(
             onClick = alTocar, enabled = habilitado, modifier = m, shape = forma,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
             border = BorderStroke(1.dp, Paleta.Borde),
+            contentPadding = relleno,
         ) { Text(texto, style = MaterialTheme.typography.titleSmall) }
     }
 }
@@ -310,6 +312,74 @@ fun RelojRom(estado: TimePickerState) {
                 state = estado,
                 colors = TimePickerDefaults.colors(clockDialColor = Paleta.Fondo),
             )
+        }
+    }
+}
+
+private val HORAS_RAPIDAS = listOf(17 * 60, 17 * 60 + 30, 18 * 60, 18 * 60 + 30, 19 * 60)
+
+private fun textoHora(minutos: Int) = "%02d:%02d".format(minutos / 60, minutos % 60)
+
+/**
+ * Hora de salida del trabajo (0.8.2): botones rápidos 17:00 a 19:00 y "Otro", que abre dos
+ * selectores (hora y minutos) para un horario exacto. [minutos] = minutos desde medianoche.
+ */
+@Composable
+fun HoraSalidaRom(minutos: Int, alCambiar: (Int) -> Unit) {
+    var otro by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(minutos !in HORAS_RAPIDAS) }
+    androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp),
+        ) {
+            HORAS_RAPIDAS.forEach { m ->
+                BotonRom(
+                    texto = textoHora(m),
+                    modifier = Modifier.weight(1f),
+                    destacado = !otro && minutos == m,
+                    alTocar = { otro = false; alCambiar(m) },
+                    compacto = true,
+                )
+            }
+        }
+        BotonRom(
+            texto = if (otro) "Otro: ${textoHora(minutos)}" else "Otro",
+            modifier = Modifier.fillMaxWidth(),
+            destacado = otro,
+            alTocar = { otro = true },
+            compacto = true,
+        )
+        if (otro) {
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+            ) {
+                SelectorNumero("Hora", minutos / 60, 0..23, Modifier.weight(1f)) { alCambiar(it * 60 + minutos % 60) }
+                SelectorNumero("Minutos", minutos % 60, 0..59, Modifier.weight(1f)) { alCambiar(minutos / 60 * 60 + it) }
+            }
+        }
+    }
+}
+
+/** Botón con menú desplegable de números (hora o minutos) con 2 dígitos. */
+@Composable
+private fun SelectorNumero(titulo: String, valor: Int, rango: IntRange, modifier: Modifier, alElegir: (Int) -> Unit) {
+    var abierto by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    Box(modifier) {
+        OutlinedButton(
+            onClick = { abierto = true },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Texto),
+            border = BorderStroke(1.dp, Paleta.Borde),
+        ) { Text("$titulo: %02d ▾".format(valor), style = MaterialTheme.typography.titleSmall) }
+        androidx.compose.material3.DropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            rango.forEach { n ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text("%02d".format(n), color = Paleta.Texto) },
+                    onClick = { abierto = false; alElegir(n) },
+                )
+            }
         }
     }
 }

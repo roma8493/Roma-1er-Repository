@@ -99,8 +99,8 @@ object CopiaJson {
                 porQue = p.getString("porQue"),
                 // Las copias anteriores a la versión 3 no traen la meta: se usa la de por defecto.
                 metaAgua = p.optInt("metaAgua", 8),
-            // Las copias anteriores a la versión 7 no traen el tema: se usa el del sistema.
-            tema = TemaPerfil.deNombre(p.optString("tema", "SISTEMA")),
+            // Las copias anteriores a la versión 7 no traen el tema: se usa el claro.
+            tema = TemaPerfil.deNombre(p.optString("tema", "CLARO")),
             )
             val habitos = raiz.getJSONArray("habitos").objetos().map {
                 val tipo = it.getString("tipo")
