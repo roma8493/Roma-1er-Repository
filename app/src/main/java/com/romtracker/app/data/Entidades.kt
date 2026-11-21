@@ -16,6 +16,8 @@ data class Perfil(
     @ColumnInfo(defaultValue = "8") val metaAgua: Int = 8,
     /** Tema de la app: [TemaPerfil.CLARO] (0, por defecto) u [TemaPerfil.OSCURO] (2). */
     @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.CLARO,
+    /** Versión mínima del Gym (R10), p. ej. "solo 20 min". Vacío = sin versión mínima. */
+    @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
 )
 
 /**
@@ -105,6 +107,8 @@ data class HabitoPropio(
     val porQue: String,
     val tipo: String,
     val fechaInicio: Long,
+    /** Versión mínima (R10), p. ej. "solo 5 min". Vacío = sin versión mínima. */
+    @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
 )
 
 object TipoPropio {

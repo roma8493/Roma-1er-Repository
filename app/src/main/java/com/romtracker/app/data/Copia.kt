@@ -23,8 +23,8 @@ data class Copia(
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 7
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 8
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -38,6 +38,7 @@ object CopiaJson {
             put("porQue", c.perfil.porQue)
             put("metaAgua", c.perfil.metaAgua)
             put("tema", TemaPerfil.nombre(c.perfil.tema))
+            put("versionMinima", c.perfil.versionMinima)
         })
         raiz.put("habitos", JSONArray().also { a ->
             c.habitos.forEach { a.put(JSONObject().put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)) }
@@ -68,6 +69,7 @@ object CopiaJson {
                 a.put(
                     JSONObject().put("id", it.id).put("nombre", it.nombre).put("claveAncla", it.claveAncla)
                         .put("porQue", it.porQue).put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)
+                        .put("versionMinima", it.versionMinima)
                 )
             }
         })
@@ -101,6 +103,8 @@ object CopiaJson {
                 metaAgua = p.optInt("metaAgua", 8),
             // Las copias anteriores a la versión 7 no traen el tema: se usa el claro.
             tema = TemaPerfil.deNombre(p.optString("tema", "CLARO")),
+                // Las copias anteriores a la versión 8 no traen la versión mínima: queda vacía.
+                versionMinima = p.optString("versionMinima", ""),
             )
             val habitos = raiz.getJSONArray("habitos").objetos().map {
                 val tipo = it.getString("tipo")
@@ -115,7 +119,7 @@ object CopiaJson {
                 if (!TipoPropio.valido(tipo)) throw CopiaInvalida("La copia tiene un hábito propio con tipo desconocido.")
                 HabitoPropio(
                     it.getLong("id"), it.getString("nombre"), it.getString("claveAncla"),
-                    it.getString("porQue"), tipo, it.getLong("fechaInicio"),
+                    it.getString("porQue"), tipo, it.getLong("fechaInicio"), it.optString("versionMinima", ""),
                 )
             } ?: emptyList()
             val clavesPropias = propios.map { claveRegistroPropio(it.id) }.toSet()

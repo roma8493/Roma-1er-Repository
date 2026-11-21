@@ -97,6 +97,33 @@ class CopiaTest {
         assertEquals(TemaPerfil.OSCURO, TemaPerfil.deNombre("OSCURO"))
     }
 
+    @Test fun idaYVueltaConservaLaVersionMinima() {
+        val c = copia.copy(
+            perfil = copia.perfil.copy(versionMinima = "solo 20 min de gym"),
+            habitosPropios = listOf(propio.copy(versionMinima = "solo 5 min")),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val leida = CopiaJson.deTexto(CopiaJson.aTexto(c))
+        assertEquals(c, leida)
+        assertEquals("solo 20 min de gym", leida.perfil.versionMinima)
+        assertEquals("solo 5 min", leida.habitosPropios.single().versionMinima)
+    }
+
+    @Test fun copiaViejaSinVersionMinimaSeRestauraConTextoVacio() {
+        val c = copia.copy(
+            habitosPropios = listOf(propio),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(c))
+        raiz.getJSONObject("perfil").remove("versionMinima")
+        raiz.getJSONArray("habitosPropios").getJSONObject(0).remove("versionMinima")
+        raiz.put("version", 7)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals("", leida.perfil.versionMinima)
+        assertEquals("", leida.habitosPropios.single().versionMinima)
+        assertEquals(c, leida)
+    }
+
     @Test fun faltanCamposSeRechaza() {
         invalida("""{"app":"RomTracker","version":1}""")
     }
