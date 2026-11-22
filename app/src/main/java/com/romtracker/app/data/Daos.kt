@@ -243,3 +243,22 @@ interface AntojoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(antojos: List<Antojo>)
 }
+
+@Dao
+interface DesencadenanteDao {
+    @Query("SELECT * FROM desencadenante ORDER BY id")
+    suspend fun todos(): List<Desencadenante>
+
+    @Insert
+    suspend fun agregar(d: Desencadenante)
+
+    /** Al borrar un hábito propio se borran también sus desencadenantes. */
+    @Query("DELETE FROM desencadenante WHERE habito = :habito")
+    suspend fun borrarDeHabito(habito: String)
+
+    @Query("DELETE FROM desencadenante")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(desencadenantes: List<Desencadenante>)
+}

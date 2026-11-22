@@ -271,4 +271,32 @@ class CopiaTest {
         val hacer = copia.copy(habitosPropios = listOf(propioHacer), antojos = listOf(Antojo(1, claveRegistroPropio(2), 20100)))
         assertTrue(invalida(CopiaJson.aTexto(hacer)).isNotBlank())
     }
+
+    @Test fun idaYVueltaConservaDesencadenantesConOpcionesVacias() {
+        val c = copia.copy(
+            habitosPropios = listOf(propioDejar),
+            desencadenantes = listOf(
+                Desencadenante(1, claveRegistroPropio(1), 20100, "Casa", "Noche", "Estrés", "Solo"),
+                Desencadenante(2, claveRegistroPropio(1), 20101, null, null, "Cansancio", null),
+            ),
+        )
+        assertEquals(c, CopiaJson.deTexto(CopiaJson.aTexto(c)))
+    }
+
+    @Test fun copiaViejaSinDesencadenantesSeRestauraConListaVacia() {
+        val texto = org.json.JSONObject(CopiaJson.aTexto(copia)).apply { remove("desencadenantes"); put("version", 11) }.toString()
+        assertTrue(CopiaJson.deTexto(texto).desencadenantes.isEmpty())
+    }
+
+    @Test fun desencadenanteDeHabitoDesconocidoOQueNoEsDejarSeRechaza() {
+        val desconocido = copia.copy(desencadenantes = listOf(Desencadenante(1, claveRegistroPropio(99), 20100)))
+        assertTrue(invalida(CopiaJson.aTexto(desconocido)).isNotBlank())
+        val hacer = copia.copy(habitosPropios = listOf(propioHacer), desencadenantes = listOf(Desencadenante(1, claveRegistroPropio(2), 20100)))
+        assertTrue(invalida(CopiaJson.aTexto(hacer)).isNotBlank())
+    }
+
+    @Test fun desencadenanteConOpcionDesconocidaSeRechaza() {
+        val mala = copia.copy(habitosPropios = listOf(propioDejar), desencadenantes = listOf(Desencadenante(1, claveRegistroPropio(1), 20100, lugar = "Luna")))
+        assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
+    }
 }

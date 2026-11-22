@@ -1,6 +1,7 @@
 package com.romtracker.app.data
 
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
+import com.romtracker.app.logic.OpcionesDesencadenante
 import com.romtracker.app.logic.itemsPorDefecto
 import com.romtracker.app.logic.lunesDe
 import com.romtracker.app.logic.marcasDeChecklistVieja
@@ -21,14 +22,15 @@ data class Copia(
     val automatismos: List<Automatismo> = emptyList(),
     val revisiones: List<Revision> = emptyList(),
     val antojos: List<Antojo> = emptyList(),
+    val desencadenantes: List<Desencadenante> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 11
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 12
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -100,6 +102,13 @@ object CopiaJson {
         })
         raiz.put("antojos", JSONArray().also { a ->
             c.antojos.forEach { a.put(JSONObject().put("id", it.id).put("habito", it.habito).put("fecha", it.fecha)) }
+        })
+        raiz.put("desencadenantes", JSONArray().also { a ->
+            c.desencadenantes.forEach {
+                // Las opciones sin elegir (null) simplemente no se escriben.
+                a.put(JSONObject().put("id", it.id).put("habito", it.habito).put("fecha", it.fecha)
+                    .put("lugar", it.lugar).put("momento", it.momento).put("emocion", it.emocion).put("compania", it.compania))
+            }
         })
         return raiz.toString(2)
     }
@@ -199,7 +208,25 @@ object CopiaJson {
                 if (h !in clavesDejar) throw CopiaInvalida("La copia tiene un antojo de un hábito desconocido.")
                 Antojo(it.getLong("id"), h, it.getLong("fecha"))
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones, antojos)
+            // Las copias anteriores a la versión 12 no traen "desencadenantes": se leen como lista vacía.
+            fun opcion(o: JSONObject, campo: String, validas: List<String>): String? {
+                if (o.isNull(campo)) return null
+                val v = o.getString(campo)
+                if (v !in validas) throw CopiaInvalida("La copia tiene un desencadenante con una opción desconocida.")
+                return v
+            }
+            val desencadenantes = raiz.optJSONArray("desencadenantes")?.objetos()?.map {
+                val h = it.getString("habito")
+                if (h !in clavesDejar) throw CopiaInvalida("La copia tiene un desencadenante de un hábito desconocido.")
+                Desencadenante(
+                    it.getLong("id"), h, it.getLong("fecha"),
+                    opcion(it, "lugar", OpcionesDesencadenante.LUGAR),
+                    opcion(it, "momento", OpcionesDesencadenante.MOMENTO),
+                    opcion(it, "emocion", OpcionesDesencadenante.EMOCION),
+                    opcion(it, "compania", OpcionesDesencadenante.COMPANIA),
+                )
+            } ?: emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones, antojos, desencadenantes)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

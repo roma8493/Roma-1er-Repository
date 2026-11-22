@@ -15,8 +15,8 @@ import com.romtracker.app.logic.puedeBorrarItem
 
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
-        ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class],
-    version = 11,
+        ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class, Desencadenante::class],
+    version = 12,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,12 +32,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun automatismoDao(): AutomatismoDao
     abstract fun revisionDao(): RevisionDao
     abstract fun antojoDao(): AntojoDao
+    abstract fun desencadenanteDao(): DesencadenanteDao
 
     /** Lee todo para la copia de seguridad. Devuelve null si todavía no hay perfil. */
     suspend fun exportar(): Copia? = withTransaction {
         val perfil = perfilDao().obtener() ?: return@withTransaction null
         Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos(),
-            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos(), revisionDao().todas(), antojoDao().todos())
+            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos(), revisionDao().todas(), antojoDao().todos(), desencadenanteDao().todos())
     }
 
     /** Guarda los vasos de un día y crea el hábito Agua si es el primer registro (inicio = esa fecha). */
@@ -57,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
         registroDao().borrarDeHabito(claveRegistroPropio(id))
         automatismoDao().borrarDeHabito(claveRegistroPropio(id))
         antojoDao().borrarDeHabito(claveRegistroPropio(id))
+        desencadenanteDao().borrarDeHabito(claveRegistroPropio(id))
         habitoPropioDao().borrar(id)
     }
 
@@ -125,6 +127,7 @@ abstract class AppDatabase : RoomDatabase() {
         automatismoDao().borrarTodo()
         revisionDao().borrarTodo()
         antojoDao().borrarTodo()
+        desencadenanteDao().borrarTodo()
         perfilDao().guardar(perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
@@ -137,6 +140,7 @@ abstract class AppDatabase : RoomDatabase() {
         automatismoDao().insertar(copia.automatismos)
         revisionDao().insertar(copia.revisiones)
         antojoDao().insertar(copia.antojos)
+        desencadenanteDao().insertar(copia.desencadenantes)
         perfil
     }
 
@@ -232,6 +236,17 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /** 1.0.2: solo agrega la tabla desencadenante (R3); no toca ninguna tabla con datos existentes. */
+    val MIGRACION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `desencadenante` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`habito` TEXT NOT NULL, `fecha` INTEGER NOT NULL, `lugar` TEXT, `momento` TEXT, " +
+                    "`emocion` TEXT, `compania` TEXT)"
+            )
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -258,7 +273,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12).build().also { instancia = it }
             }
     }
 }

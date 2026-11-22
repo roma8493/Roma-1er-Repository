@@ -147,6 +147,21 @@ data class Antojo(
     val fecha: Long,
 )
 
+/**
+ * Desencadenante (R3) anotado al registrar un desliz en un hábito propio DEJAR. Una fila por desliz anotado;
+ * [habito] usa la clave de [claveRegistroPropio]. Cada fila de opciones es opcional (null = no se eligió).
+ */
+@Entity(tableName = "desencadenante")
+data class Desencadenante(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val habito: String,
+    val fecha: Long,
+    val lugar: String? = null,
+    val momento: String? = null,
+    val emocion: String? = null,
+    val compania: String? = null,
+)
+
 object TipoPropio {
     const val HACER = "HACER"
     const val DEJAR = "DEJAR"
