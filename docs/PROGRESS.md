@@ -69,4 +69,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- T35 implementada y subida (pendiente confirmar el Action en verde). Siguiente sesión limpia: T36 (UI del antojo resistido: botón "Resistí un antojo 💪" con −1 en Hoy y Detalle de hábitos DEJAR + línea de conteos). Los APK se agrupan T35+T36: se prueba en el celular recién con T36 (1.0.1).
+- T35 implementada, subida y con Action en verde (confirmado por el usuario 2026-11-22). Siguiente sesión limpia: T36 (UI del antojo resistido: botón "Resistí un antojo 💪" con −1 en Hoy y Detalle de hábitos DEJAR + línea de conteos). Los APK se agrupan T35+T36: se prueba en el celular recién con T36 (1.0.1).
