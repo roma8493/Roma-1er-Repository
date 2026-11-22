@@ -24,7 +24,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import com.romtracker.app.data.Desencadenante
 import com.romtracker.app.logic.OpcionesDesencadenante
+import com.romtracker.app.logic.faltanParaPatron
+import com.romtracker.app.logic.opcionMasFrecuente
+import com.romtracker.app.logic.sugerenciaEntorno
 
 /**
  * Diálogo opcional (R3) que aparece al registrar un desliz en un hábito DEJAR.
@@ -89,4 +94,37 @@ private fun ChipOpcion(texto: String, elegido: Boolean, modifier: Modifier, alTo
         colors = ButtonDefaults.outlinedButtonColors(contentColor = Paleta.Acento),
         border = BorderStroke(1.dp, Paleta.Borde),
     ) { Text(texto, maxLines = 1) }
+}
+
+/**
+ * Tarjeta "Lo que se repite" (R3) del Detalle de un hábito DEJAR. [anotados] son los desencadenantes de ese hábito.
+ * Solo cuentan los que tienen al menos una opción elegida. Con menos de 3 muestra cuántos faltan.
+ * Lenguaje de asociación e invitación, nunca de causa ni de obligación (R8).
+ */
+@Composable
+fun TarjetaPatron(anotados: List<Desencadenante>) {
+    val utiles = anotados.filter { it.lugar != null || it.momento != null || it.emocion != null || it.compania != null }
+    TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Lo que se repite", style = MaterialTheme.typography.titleMedium)
+            val faltan = faltanParaPatron(utiles.size)
+            if (faltan > 0) {
+                Text(
+                    "Cuando anotes ${if (faltan == 1) "1 desliz más" else "$faltan deslices más"} te muestro qué se asocia con ellos.",
+                    color = Paleta.TextoSecundario,
+                )
+            } else {
+                val lugar = opcionMasFrecuente(utiles.map { it.lugar }, OpcionesDesencadenante.LUGAR)
+                val momento = opcionMasFrecuente(utiles.map { it.momento }, OpcionesDesencadenante.MOMENTO)
+                val emocion = opcionMasFrecuente(utiles.map { it.emocion }, OpcionesDesencadenante.EMOCION)
+                val compania = opcionMasFrecuente(utiles.map { it.compania }, OpcionesDesencadenante.COMPANIA)
+                Text("En ${utiles.size} deslices anotados, lo que más se asocia es:", color = Paleta.TextoSecundario)
+                lugar?.let { Text("Lugar: $it") }
+                momento?.let { Text("Momento: $it") }
+                emocion?.let { Text("Emoción: $it") }
+                compania?.let { Text("Compañía: $it") }
+                sugerenciaEntorno(emocion, lugar)?.let { Text(it, color = Paleta.TextoSecundario) }
+            }
+        }
+    }
 }

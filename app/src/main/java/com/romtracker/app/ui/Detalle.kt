@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Agua
 import com.romtracker.app.data.Antojo
+import com.romtracker.app.data.Desencadenante
+import com.romtracker.app.logic.desencadenantesDe
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Automatismo
 import com.romtracker.app.data.HabitoPropio
@@ -97,12 +99,14 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
     var checks by remember { mutableStateOf<List<Automatismo>>(emptyList()) }
     var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
+    var desencadenantes by remember { mutableStateOf<List<Desencadenante>>(emptyList()) }
     // Día de desliz recién marcado en un hábito DEJAR: abre el diálogo opcional de desencadenante (R3).
     var deslizFecha by remember { mutableStateOf<LocalDate?>(null) }
 
     suspend fun cargar() {
         checks = db.automatismoDao().todos()
         antojos = db.antojoDao().todos()
+        desencadenantes = db.desencadenanteDao().todos()
         if (esPropio) {
             // Hábito propio: los registros guardan el ✓ ya resuelto según el tipo.
             val id = tipo.removePrefix(PREFIJO_PROPIO).toLongOrNull()
@@ -319,6 +323,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     }
                 }
             }
+            if (dejar) TarjetaPatron(desencadenantesDe(desencadenantes, tipo))
             if (editando) {
                 DialogoEditarPropio(
                     p,
@@ -336,7 +341,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 DialogoDesencadenante(
                     alGuardar = { lugar, momento, emocion, compania ->
                         deslizFecha = null
-                        scope.launch { db.anotarDesencadenante(p.id, f.toEpochDay(), lugar, momento, emocion, compania) }
+                        scope.launch { db.anotarDesencadenante(p.id, f.toEpochDay(), lugar, momento, emocion, compania); cargar() }
                     },
                     alCerrar = { deslizFecha = null },
                 )
