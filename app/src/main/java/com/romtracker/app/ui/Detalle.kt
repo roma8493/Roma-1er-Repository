@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Agua
+import com.romtracker.app.data.Antojo
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.Automatismo
 import com.romtracker.app.data.HabitoPropio
@@ -51,6 +52,9 @@ import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.Registros
 import com.romtracker.app.logic.ajustarVasos
+import com.romtracker.app.logic.antojosDeHoy
+import com.romtracker.app.logic.antojosDeLaSemana
+import com.romtracker.app.logic.antojosTotales
 import com.romtracker.app.logic.checksDeHabito
 import com.romtracker.app.logic.consistencia
 import com.romtracker.app.logic.diaDelHabito
@@ -92,9 +96,11 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var aguas by remember { mutableStateOf<Map<LocalDate, Agua>>(emptyMap()) }
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
     var checks by remember { mutableStateOf<List<Automatismo>>(emptyList()) }
+    var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
 
     suspend fun cargar() {
         checks = db.automatismoDao().todos()
+        antojos = db.antojoDao().todos()
         if (esPropio) {
             // Hábito propio: los registros guardan el ✓ ya resuelto según el tipo.
             val id = tipo.removePrefix(PREFIJO_PROPIO).toLongOrNull()
@@ -290,6 +296,15 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     )
                     Text("¿Por qué? ${p.porQue}", color = Paleta.TextoSecundario)
                     if (p.versionMinima.isNotBlank()) Text("Versión mínima: ${p.versionMinima}", color = Paleta.TextoSecundario)
+                    if (dejar) {
+                        BloqueAntojo(
+                            hoy = antojosDeHoy(antojos, p.id, hoy.toEpochDay()),
+                            semana = antojosDeLaSemana(antojos, p.id, hoy.toEpochDay()),
+                            total = antojosTotales(antojos, p.id),
+                            alSumar = { scope.launch { db.sumarAntojo(p.id, hoy.toEpochDay()); cargar() } },
+                            alRestar = { scope.launch { db.restarAntojo(p.id, hoy.toEpochDay()); cargar() } },
+                        )
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         BotonSecundario("Editar") { editando = true }
                         BotonSecundario("Borrar hábito") { borrando = true }

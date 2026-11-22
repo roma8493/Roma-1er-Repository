@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Animo
+import com.romtracker.app.data.Antojo
 import com.romtracker.app.data.AppDatabase
 import com.romtracker.app.data.ChecklistItem
 import com.romtracker.app.data.ChecklistMarca
@@ -43,6 +44,7 @@ import com.romtracker.app.logic.CARITAS
 import com.romtracker.app.logic.Fase
 import com.romtracker.app.logic.NOMBRES_ANIMO
 import com.romtracker.app.logic.ajustarVasos
+import com.romtracker.app.logic.antojosDeHoy
 import com.romtracker.app.logic.cumplidoAgua
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estaHecho
@@ -89,6 +91,8 @@ fun Hoy(
     var animo by remember { mutableStateOf<Int?>(null) }
     // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
     var propios by remember { mutableStateOf<List<Pair<HabitoPropio, TarjetaEstado>>>(emptyList()) }
+    // Antojos resistidos (R11) de los hábitos propios DEJAR.
+    var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
     var editandoChecklist by remember { mutableStateOf(false) }
     // Checklist editable: ítems actuales y marcas de anoche (para hoy) y de esta noche (para mañana).
     var itemsChecklist by remember { mutableStateOf<List<ChecklistItem>>(emptyList()) }
@@ -131,7 +135,15 @@ fun Hoy(
         }
     }
 
+    fun cambiarAntojo(p: HabitoPropio, delta: Int) {
+        scope.launch {
+            if (delta > 0) db.sumarAntojo(p.id, fecha.toEpochDay()) else db.restarAntojo(p.id, fecha.toEpochDay())
+            antojos = db.antojoDao().todos()
+        }
+    }
+
     LaunchedEffect(Unit) {
+        antojos = db.antojoDao().todos()
         propios = cargarPropios()
         gym = cargarHabito(TipoHabito.GYM)
         agua = cargarAgua()
@@ -292,6 +304,8 @@ fun Hoy(
                 alAbrir = { alAbrir(claveRegistroPropio(p.id)) },
                 alElegir = { registrarPropio(p, it) },
                 versionMinima = p.versionMinima,
+                antojosHoy = if (dejar) antojosDeHoy(antojos, p.id, fecha.toEpochDay()) else null,
+                alCambiarAntojo = { cambiarAntojo(p, it) },
             )
         }
 
@@ -348,6 +362,8 @@ private fun TarjetaHabito(
     alAbrir: () -> Unit,
     alElegir: (Boolean) -> Unit,
     versionMinima: String = "",
+    antojosHoy: Int? = null,
+    alCambiarAntojo: (Int) -> Unit = {},
 ) {
     // Tocar la tarjeta abre el Detalle (solo si el hábito ya empezó).
     TarjetaRom(alTocar = alAbrir, habilitada = estado != null, modifier = Modifier.fillMaxWidth()) {
@@ -385,6 +401,9 @@ private fun TarjetaHabito(
                 true -> Text(mensajeSi, style = MaterialTheme.typography.bodyMedium, color = Paleta.Verde)
                 false -> Text(mensajeNo, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
                 null -> Unit
+            }
+            if (antojosHoy != null) {
+                BloqueAntojo(antojosHoy, alSumar = { alCambiarAntojo(1) }, alRestar = { alCambiarAntojo(-1) })
             }
             if (estado != null) {
                 Text(
