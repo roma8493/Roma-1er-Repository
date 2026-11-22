@@ -69,4 +69,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- 0.9.2 pendiente de Action en verde. Probar en el A34 (instalar encima): (1) abajo de Hoy hay "Revisión semanal ›"; (2) la pantalla guarda 2 textos y los lista como revisión anterior; (3) la invitación en Hoy solo aparece desde el lunes siguiente al inicio del primer hábito (se puede probar el enlace fijo ya); (4) T32: la tarjeta de check aparece con 28+ días desde el inicio del hábito. Después: decidir la próxima regla (quedan R3, R11, R12) o cerrar la versión 0.9.
+- T32 CONFIRMADA por el usuario en el A34 (2026-11-22). 0.9.2 pendiente de Action en verde. Falta probar en el A34 (T34): (1) abajo de Hoy hay "Revisión semanal ›"; (2) la pantalla guarda 2 textos y los lista como revisión anterior; (3) la invitación en Hoy solo aparece desde el lunes siguiente al inicio del primer hábito (se puede probar el enlace fijo ya). Después: decidir la próxima regla (quedan R3, R11, R12) o cerrar la versión 0.9.
