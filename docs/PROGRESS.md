@@ -69,4 +69,4 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- T32 y T34 CONFIRMADAS por el usuario en el A34 (2026-11-22). Versión 0.9 (R6 + R9) CERRADA. SPEC 1.0 (R11 antojo resistido + R3 desencadenantes, solo hábitos DEJAR; R12 fuera) escrita en `docs/SPEC.md` con tareas T35–T39, pendiente de revisión/aprobación del usuario. Siguiente sesión limpia: T35 (datos del antojo, Migration 10→11).
+- T32 y T34 CONFIRMADAS por el usuario en el A34 (2026-11-22). Versión 0.9 (R6 + R9) CERRADA. SPEC 1.0 (R11 antojo resistido + R3 desencadenantes, solo hábitos DEJAR; R12 fuera) escrita en `docs/SPEC.md` con tareas T35–T39, APROBADA por el usuario (2026-11-22); APK agrupados T35+T36 y T37–T39. Siguiente sesión limpia: T35 (datos del antojo, Migration 10→11).
