@@ -136,6 +136,17 @@ data class Revision(
     val cambio: String = "",
 )
 
+/**
+ * Antojo resistido (R11) de un hábito propio DEJAR. Cada fila es un antojo; [habito] usa la clave de
+ * [claveRegistroPropio]. No afecta el ✓ del día, la racha, la consistencia ni la fase.
+ */
+@Entity(tableName = "antojo")
+data class Antojo(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val habito: String,
+    val fecha: Long,
+)
+
 object TipoPropio {
     const val HACER = "HACER"
     const val DEJAR = "DEJAR"

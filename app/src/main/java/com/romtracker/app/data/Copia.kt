@@ -20,14 +20,15 @@ data class Copia(
     val checklistMarcas: List<ChecklistMarca> = emptyList(),
     val automatismos: List<Automatismo> = emptyList(),
     val revisiones: List<Revision> = emptyList(),
+    val antojos: List<Antojo> = emptyList(),
 )
 
 /** El archivo no es una copia válida de RomTracker. [message] es apto para mostrar al usuario. */
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 10
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 11
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -96,6 +97,9 @@ object CopiaJson {
             c.revisiones.forEach {
                 a.put(JSONObject().put("semana", it.semana).put("barrera", it.barrera).put("cambio", it.cambio))
             }
+        })
+        raiz.put("antojos", JSONArray().also { a ->
+            c.antojos.forEach { a.put(JSONObject().put("id", it.id).put("habito", it.habito).put("fecha", it.fecha)) }
         })
         return raiz.toString(2)
     }
@@ -188,7 +192,14 @@ object CopiaJson {
                 if (semana != lunesDe(semana)) throw CopiaInvalida("La copia tiene una revisión semanal con una fecha inválida.")
                 Revision(semana, it.optString("barrera", ""), it.optString("cambio", ""))
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones)
+            // Las copias anteriores a la versión 11 no traen "antojos": se leen como lista vacía.
+            val clavesDejar = propios.filter { it.tipo == TipoPropio.DEJAR }.map { claveRegistroPropio(it.id) }.toSet()
+            val antojos = raiz.optJSONArray("antojos")?.objetos()?.map {
+                val h = it.getString("habito")
+                if (h !in clavesDejar) throw CopiaInvalida("La copia tiene un antojo de un hábito desconocido.")
+                Antojo(it.getLong("id"), h, it.getLong("fecha"))
+            } ?: emptyList()
+            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones, antojos)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

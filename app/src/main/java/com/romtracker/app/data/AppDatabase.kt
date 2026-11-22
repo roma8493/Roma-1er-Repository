@@ -15,8 +15,8 @@ import com.romtracker.app.logic.puedeBorrarItem
 
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
-        ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class],
-    version = 10,
+        ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class],
+    version = 11,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,12 +31,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun checklistMarcaDao(): ChecklistMarcaDao
     abstract fun automatismoDao(): AutomatismoDao
     abstract fun revisionDao(): RevisionDao
+    abstract fun antojoDao(): AntojoDao
 
     /** Lee todo para la copia de seguridad. Devuelve null si todavía no hay perfil. */
     suspend fun exportar(): Copia? = withTransaction {
         val perfil = perfilDao().obtener() ?: return@withTransaction null
         Copia(perfil, habitoDao().todos(), registroDao().todosLosRegistros(), checklistDao().todas(), aguaDao().todas(), animoDao().todos(), habitoPropioDao().todos(),
-            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos(), revisionDao().todas())
+            checklistItemDao().todos(), checklistMarcaDao().todas(), automatismoDao().todos(), revisionDao().todas(), antojoDao().todos())
     }
 
     /** Guarda los vasos de un día y crea el hábito Agua si es el primer registro (inicio = esa fecha). */
@@ -55,8 +56,15 @@ abstract class AppDatabase : RoomDatabase() {
     suspend fun borrarPropio(id: Long) = withTransaction {
         registroDao().borrarDeHabito(claveRegistroPropio(id))
         automatismoDao().borrarDeHabito(claveRegistroPropio(id))
+        antojoDao().borrarDeHabito(claveRegistroPropio(id))
         habitoPropioDao().borrar(id)
     }
+
+    /** Suma un antojo resistido (R11) de un hábito propio en [fecha]. */
+    suspend fun sumarAntojo(id: Long, fecha: Long) = antojoDao().sumar(Antojo(0, claveRegistroPropio(id), fecha))
+
+    /** Resta uno (corrección); si ese día no tiene antojos no hace nada, así nunca baja de 0. */
+    suspend fun restarAntojo(id: Long, fecha: Long) = antojoDao().restarUno(claveRegistroPropio(id), fecha)
 
     /** Agrega un ítem al final de la checklist. Devuelve false si ya hay [MAX_ITEMS_CHECKLIST] o el texto está vacío. */
     suspend fun agregarItemChecklist(texto: String): Boolean = withTransaction {
@@ -116,6 +124,7 @@ abstract class AppDatabase : RoomDatabase() {
         checklistMarcaDao().borrarTodo()
         automatismoDao().borrarTodo()
         revisionDao().borrarTodo()
+        antojoDao().borrarTodo()
         perfilDao().guardar(perfil)
         habitoDao().insertar(copia.habitos)
         registroDao().insertar(copia.registros)
@@ -127,6 +136,7 @@ abstract class AppDatabase : RoomDatabase() {
         checklistMarcaDao().insertar(copia.checklistMarcas)
         automatismoDao().insertar(copia.automatismos)
         revisionDao().insertar(copia.revisiones)
+        antojoDao().insertar(copia.antojos)
         perfil
     }
 
@@ -212,6 +222,16 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /** 1.0.0: solo agrega la tabla antojo (R11, antojo resistido); no toca ninguna tabla con datos existentes. */
+    val MIGRACION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `antojo` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`habito` TEXT NOT NULL, `fecha` INTEGER NOT NULL)"
+            )
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -238,7 +258,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11).build().also { instancia = it }
             }
     }
 }

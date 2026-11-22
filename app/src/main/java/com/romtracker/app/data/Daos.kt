@@ -220,3 +220,26 @@ interface RevisionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(revisiones: List<Revision>)
 }
+
+@Dao
+interface AntojoDao {
+    @Query("SELECT * FROM antojo ORDER BY id")
+    suspend fun todos(): List<Antojo>
+
+    @Insert
+    suspend fun sumar(antojo: Antojo)
+
+    /** Borra el último antojo de ese hábito y día (si hay). Sirve para corregir un toque por error. */
+    @Query("DELETE FROM antojo WHERE id = (SELECT MAX(id) FROM antojo WHERE habito = :habito AND fecha = :fecha)")
+    suspend fun restarUno(habito: String, fecha: Long)
+
+    /** Al borrar un hábito propio se borran también sus antojos. */
+    @Query("DELETE FROM antojo WHERE habito = :habito")
+    suspend fun borrarDeHabito(habito: String)
+
+    @Query("DELETE FROM antojo")
+    suspend fun borrarTodo()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(antojos: List<Antojo>)
+}

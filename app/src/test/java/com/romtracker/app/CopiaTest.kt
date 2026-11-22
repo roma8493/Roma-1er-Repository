@@ -248,4 +248,27 @@ class CopiaTest {
         val mala = copia.copy(revisiones = listOf(Revision(lunes + 2, "x", "y")))
         assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
     }
+
+    private val propioDejar = HabitoPropio(1, "Fumar", "Después del café", "Salud", TipoPropio.DEJAR, 20000)
+    private val propioHacer = HabitoPropio(2, "Leer", "Antes de dormir", "Calma", TipoPropio.HACER, 20000)
+
+    @Test fun idaYVueltaConservaAntojos() {
+        val c = copia.copy(
+            habitosPropios = listOf(propioDejar),
+            antojos = listOf(Antojo(1, claveRegistroPropio(1), 20100), Antojo(2, claveRegistroPropio(1), 20100)),
+        )
+        assertEquals(c, CopiaJson.deTexto(CopiaJson.aTexto(c)))
+    }
+
+    @Test fun copiaViejaSinAntojosSeRestauraConListaVacia() {
+        val texto = org.json.JSONObject(CopiaJson.aTexto(copia)).apply { remove("antojos"); put("version", 10) }.toString()
+        assertTrue(CopiaJson.deTexto(texto).antojos.isEmpty())
+    }
+
+    @Test fun antojoDeHabitoDesconocidoOQueNoEsDejarSeRechaza() {
+        val desconocido = copia.copy(antojos = listOf(Antojo(1, claveRegistroPropio(99), 20100)))
+        assertTrue(invalida(CopiaJson.aTexto(desconocido)).isNotBlank())
+        val hacer = copia.copy(habitosPropios = listOf(propioHacer), antojos = listOf(Antojo(1, claveRegistroPropio(2), 20100)))
+        assertTrue(invalida(CopiaJson.aTexto(hacer)).isNotBlank())
+    }
 }
