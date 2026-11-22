@@ -256,6 +256,10 @@ interface DesencadenanteDao {
     @Query("DELETE FROM desencadenante WHERE habito = :habito")
     suspend fun borrarDeHabito(habito: String)
 
+    /** Un desliz tiene a lo sumo un desencadenante por día: se borra el del día antes de anotar otro. */
+    @Query("DELETE FROM desencadenante WHERE habito = :habito AND fecha = :fecha")
+    suspend fun borrarDeDia(habito: String, fecha: Long)
+
     @Query("DELETE FROM desencadenante")
     suspend fun borrarTodo()
 

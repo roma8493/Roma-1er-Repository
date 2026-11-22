@@ -68,6 +68,18 @@ abstract class AppDatabase : RoomDatabase() {
     /** Resta uno (corrección); si ese día no tiene antojos no hace nada, así nunca baja de 0. */
     suspend fun restarAntojo(id: Long, fecha: Long) = antojoDao().restarUno(claveRegistroPropio(id), fecha)
 
+    /** Anota el desencadenante (R3) del desliz de [fecha]; reemplaza el que hubiera ese día. Los textos nulos = no elegido. */
+    suspend fun anotarDesencadenante(
+        id: Long, fecha: Long, lugar: String?, momento: String?, emocion: String?, compania: String?,
+    ) = withTransaction {
+        desencadenanteDao().borrarDeDia(claveRegistroPropio(id), fecha)
+        desencadenanteDao().agregar(Desencadenante(0, claveRegistroPropio(id), fecha, lugar, momento, emocion, compania))
+    }
+
+    /** Si el día deja de ser desliz (✓ o sin dato), su desencadenante ya no corresponde. */
+    suspend fun borrarDesencadenanteDelDia(id: Long, fecha: Long) =
+        desencadenanteDao().borrarDeDia(claveRegistroPropio(id), fecha)
+
     /** Agrega un ítem al final de la checklist. Devuelve false si ya hay [MAX_ITEMS_CHECKLIST] o el texto está vacío. */
     suspend fun agregarItemChecklist(texto: String): Boolean = withTransaction {
         val items = checklistItemDao().todos()

@@ -91,6 +91,8 @@ fun Hoy(
     var animo by remember { mutableStateOf<Int?>(null) }
     // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
     var propios by remember { mutableStateOf<List<Pair<HabitoPropio, TarjetaEstado>>>(emptyList()) }
+    // Desliz recién registrado en un hábito DEJAR: abre el diálogo opcional de desencadenante (R3).
+    var deslizDe by remember { mutableStateOf<HabitoPropio?>(null) }
     // Antojos resistidos (R11) de los hábitos propios DEJAR.
     var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
     var editandoChecklist by remember { mutableStateOf(false) }
@@ -130,7 +132,12 @@ fun Hoy(
 
     fun registrarPropio(p: HabitoPropio, cumplido: Boolean) {
         scope.launch {
-            db.registroDao().guardar(Registro(claveRegistroPropio(p.id), fecha.toEpochDay(), cumplido))
+            val clave = claveRegistroPropio(p.id)
+            val previo = db.registroDao().todos(clave).firstOrNull { it.fecha == fecha.toEpochDay() }?.cumplido
+            db.registroDao().guardar(Registro(clave, fecha.toEpochDay(), cumplido))
+            if (cumplido) db.borrarDesencadenanteDelDia(p.id, fecha.toEpochDay())
+            // Desliz nuevo en un hábito DEJAR: se ofrece anotar qué pasó (opcional).
+            else if (p.tipo == TipoPropio.DEJAR && previo != false) deslizDe = p
             propios = cargarPropios()
         }
     }
@@ -289,6 +296,16 @@ fun Hoy(
             alAbrir = { alAbrir("ANIMO") },
             alElegir = { elegirAnimo(it) },
         )
+
+        deslizDe?.let { d ->
+            DialogoDesencadenante(
+                alGuardar = { lugar, momento, emocion, compania ->
+                    deslizDe = null
+                    scope.launch { db.anotarDesencadenante(d.id, fecha.toEpochDay(), lugar, momento, emocion, compania) }
+                },
+                alCerrar = { deslizDe = null },
+            )
+        }
 
         propios.forEach { (p, estado) ->
             val dejar = p.tipo == TipoPropio.DEJAR

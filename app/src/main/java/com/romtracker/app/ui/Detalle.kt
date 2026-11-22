@@ -97,6 +97,8 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var mes by remember { mutableStateOf(YearMonth.from(hoy)) }
     var checks by remember { mutableStateOf<List<Automatismo>>(emptyList()) }
     var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
+    // Día de desliz recién marcado en un hábito DEJAR: abre el diálogo opcional de desencadenante (R3).
+    var deslizFecha by remember { mutableStateOf<LocalDate?>(null) }
 
     suspend fun cargar() {
         checks = db.automatismoDao().todos()
@@ -126,9 +128,15 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     LaunchedEffect(Unit) { cargar() }
 
     fun marcar(fecha: LocalDate, valor: Boolean?) {
+        val previo = registros[fecha]
         scope.launch {
             if (valor == null) db.registroDao().borrar(tipo, fecha.toEpochDay())
             else db.registroDao().guardar(Registro(tipo, fecha.toEpochDay(), valor))
+            propio?.let { p ->
+                if (valor != false) db.borrarDesencadenanteDelDia(p.id, fecha.toEpochDay())
+                // Desliz nuevo (antes ✓ o sin dato): se ofrece anotar qué pasó; si ya era desliz no se vuelve a preguntar.
+                else if (p.tipo == TipoPropio.DEJAR && previo != false) deslizFecha = fecha
+            }
             cargar()
         }
     }
@@ -322,6 +330,15 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                             cargar()
                         }
                     },
+                )
+            }
+            deslizFecha?.let { f ->
+                DialogoDesencadenante(
+                    alGuardar = { lugar, momento, emocion, compania ->
+                        deslizFecha = null
+                        scope.launch { db.anotarDesencadenante(p.id, f.toEpochDay(), lugar, momento, emocion, compania) }
+                    },
+                    alCerrar = { deslizFecha = null },
                 )
             }
             if (borrando) {
