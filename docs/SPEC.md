@@ -259,7 +259,7 @@ Riesgos: la conversión toca claves en `registro`, `automatismo`, `antojo` y la 
 - R17 "Si… entonces…" en hábitos DEJAR: plan opcional ("Si me dan ganas de X, entonces Y") visible en el Detalle y en Hoy.
 - R12 sigue fuera (exige notificaciones del sistema).
 
-- [ ] T45: R13+R14+R15 (solo lógica y textos, sin migración): notas en `docs/notas/`, funciones puras testeadas (`rachaRota`/`falloAyer`, `cruzoFase`), mensajes en Hoy y Detalle. Versión 1.3.0. Verifica en el celular.
+- [x] T45: R13+R14+R15 (solo lógica y textos, sin migración): notas en `docs/notas/`, funciones puras testeadas (`rachaRota`/`falloAyer`, `cruzoFase`), mensajes en Hoy y Detalle. Versión 1.3.0. Verifica en el celular.
 - [ ] T46: R16 apilar hábitos: selector de ancla "Después de otro hábito" en Nuevo hábito y Editar (guarda el texto, sin migración), notas. Versión 1.3.1. Verifica en el celular.
 - [ ] T47: R17 datos: columna `planSiEntonces` (texto) en `habito_propio` con `Migration(15,16)`, copia v16, tests. Sin UI. Versión 1.3.2 (sin cambio visible).
 - [ ] T48: R17 UI: campo opcional en Nuevo hábito/Editar solo para DEJAR, se muestra en el Detalle y como recordatorio en la tarjeta de Hoy. Versión 1.3.3. Verifica en el celular.

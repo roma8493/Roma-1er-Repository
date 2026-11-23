@@ -16,6 +16,9 @@
 | R10 | Conductas simples se automatizan más rápido | Sugerir **versión mínima** del hábito al empezar (ej. "solo 20 min de gym"). |
 | R11 | Clave motivada / antojo (dopamina) | Para hábitos malos: registrar el **antojo resistido** como logro, no solo el consumo. |
 | R12 | Fase 1 (días 1–90) = riesgo máximo de abandono | Más apoyo/recordatorios en los primeros 90 días; menos intrusivo en fases siguientes. |
+| R13 | Un fallo aislado no rompe el hábito; lo que daña es fallar dos veces seguidas | "Nunca falles dos veces": tras un día en "no", la tarjeta de Hoy dice "Mañana es lo que importa" (o "Hoy es el día que importa" si ayer fue no). Sin culpa (R8). |
+| R14 | La recompensa inmediata refuerza la repetición | Mensaje breve al marcar ✓; en rachas de 3, 7, 14, 30, 60, 100, 200 y 365 días, uno especial. |
+| R15 | Los cambios de fase (día 90 y 270) son hitos que conviene notar | Aviso suave en Hoy y Detalle durante los 7 días siguientes al cambio de fase (sin guardar nada: se calcula del día del hábito). |
 
 ## Mapeo a funciones pedidas por el usuario
 - Gym → hábito bueno (R1, R2, R5, R10).

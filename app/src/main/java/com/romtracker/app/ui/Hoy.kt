@@ -50,7 +50,13 @@ import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estaHecho
 import com.romtracker.app.logic.estadoDeFase
 import com.romtracker.app.logic.habitosQueTocan
+import com.romtracker.app.logic.cruzoFase
+import com.romtracker.app.logic.falloAyer
 import com.romtracker.app.logic.iconoDe
+import com.romtracker.app.logic.mensajeCelebracion
+import com.romtracker.app.logic.rachaActual
+import com.romtracker.app.logic.textoAvisoFase
+import com.romtracker.app.logic.textoNuncaDosVeces
 import com.romtracker.app.logic.tocaRevision
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -59,8 +65,11 @@ import java.util.Locale
 
 private val LOCALE_ES = Locale("es", "AR")
 
-/** Estado de un hábito para pintar su tarjeta. [hoy]: null = sin dato. */
-private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
+/**
+ * Estado de un hábito para pintar su tarjeta. [hoy]: null = sin dato.
+ * [racha]: racha actual (R14); [falloAyer]: ayer quedó en "no" (R13).
+ */
+private data class TarjetaEstado(val dia: Int, val hoy: Boolean?, val racha: Int = 0, val falloAyer: Boolean = false)
 
 /** Estado del agua. [dia] null = el hábito todavía no empezó (empieza con el primer vaso). */
 private data class AguaEstado(val dia: Int?, val vasos: Int, val meta: Int)
@@ -118,9 +127,15 @@ fun Hoy(
 
     suspend fun cargarPropios(): List<Pair<HabitoPropio, TarjetaEstado>> =
         db.habitoPropioDao().todos().map { p ->
-            val registroHoy = db.registroDao().todos(claveRegistroPropio(p.id))
-                .firstOrNull { it.fecha == fecha.toEpochDay() }?.cumplido
-            p to TarjetaEstado(diaDelHabito(LocalDate.ofEpochDay(p.fechaInicio), fecha), registroHoy)
+            val inicio = LocalDate.ofEpochDay(p.fechaInicio)
+            val registros = db.registroDao().todos(claveRegistroPropio(p.id))
+                .associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
+            p to TarjetaEstado(
+                dia = diaDelHabito(inicio, fecha),
+                hoy = registros[fecha],
+                racha = rachaActual(inicio, fecha, registros),
+                falloAyer = falloAyer(inicio, fecha, registros),
+            )
         }
 
     fun registrarPropio(p: HabitoPropio, cumplido: Boolean) {
@@ -286,8 +301,10 @@ fun Hoy(
                 // El 1.er botón siempre es el ✓: en DEJAR significa "no lo hice".
                 textoSi = if (dejar) "No lo hice 💪" else "Sí ✓",
                 textoNo = if (dejar) "Sí lo hice" else "Hoy no",
-                mensajeSi = if (dejar) "Un día más sin hacerlo. ¡Bien!" else "¡Qué bueno que lo hiciste!",
-                mensajeNo = if (dejar) "Un día no borra lo que venís logrando." else "Mañana es otra oportunidad.",
+                mensajeSi = mensajeCelebracion(estado.racha, dejar),
+                mensajeNo = textoNuncaDosVeces(estado.falloAyer, false).orEmpty(),
+                mensajeAyer = textoNuncaDosVeces(estado.falloAyer, null),
+                avisoFase = cruzoFase(estado.dia)?.let { textoAvisoFase(it) },
                 alAbrir = { alAbrir(claveRegistroPropio(p.id)) },
                 alElegir = { registrarPropio(p, it) },
                 versionMinima = p.versionMinima,
@@ -348,6 +365,8 @@ private fun TarjetaHabito(
     mensajeNo: String,
     alAbrir: () -> Unit,
     alElegir: (Boolean) -> Unit,
+    mensajeAyer: String? = null,
+    avisoFase: String? = null,
     versionMinima: String = "",
     antojosHoy: Int? = null,
     alCambiarAntojo: (Int) -> Unit = {},
@@ -387,7 +406,14 @@ private fun TarjetaHabito(
             when (estado?.hoy) {
                 true -> Text(mensajeSi, style = MaterialTheme.typography.bodyMedium, color = Paleta.Verde)
                 false -> Text(mensajeNo, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
-                null -> Unit
+                // R13: ayer no se dio y hoy todavía no hay registro.
+                null -> if (mensajeAyer != null) {
+                    Text(mensajeAyer, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
+                }
+            }
+            // R15: aviso suave durante la semana del cambio de fase.
+            if (avisoFase != null) {
+                Text(avisoFase, style = MaterialTheme.typography.bodyMedium, color = Paleta.Titulo)
             }
             if (antojosHoy != null) {
                 BloqueAntojo(antojosHoy, alSumar = { alCambiarAntojo(1) }, alRestar = { alCambiarAntojo(-1) })

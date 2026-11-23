@@ -62,8 +62,12 @@ import com.romtracker.app.logic.consistencia
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.esEditable
 import com.romtracker.app.logic.estadoDeFase
+import com.romtracker.app.logic.cruzoFase
+import com.romtracker.app.logic.falloAyer
 import com.romtracker.app.logic.iconoDe
 import com.romtracker.app.logic.rachaActual
+import com.romtracker.app.logic.textoAvisoFase
+import com.romtracker.app.logic.textoNuncaDosVeces
 import com.romtracker.app.logic.registrosDeAgua
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -205,6 +209,16 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Estadistica("CONSISTENCIA", "${cons.cumplidos}", "de ${cons.total} días", Modifier.weight(1f))
                     Estadistica("RACHA", "$racha", if (racha == 1) "día" else "días", Modifier.weight(1f))
+                }
+                // R15: aviso suave durante la semana del cambio de fase.
+                cruzoFase(dia)?.let { textoAvisoFase(it) }?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium, color = Paleta.Titulo)
+                }
+                // R13: solo en hábitos de sí/no (no en Agua, que se mide en vasos).
+                if (!esAgua) {
+                    textoNuncaDosVeces(falloAyer(ini, hoy, registros), registros[hoy])?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSecundario)
+                    }
                 }
             }
         }
