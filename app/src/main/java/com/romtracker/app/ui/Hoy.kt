@@ -308,6 +308,7 @@ fun Hoy(
                 alAbrir = { alAbrir(claveRegistroPropio(p.id)) },
                 alElegir = { registrarPropio(p, it) },
                 versionMinima = p.versionMinima,
+                plan = if (dejar) p.planSiEntonces else "",
                 antojosHoy = if (dejar) antojosDeHoy(antojos, p.id, fecha.toEpochDay()) else null,
                 alCambiarAntojo = { cambiarAntojo(p, it) },
             )
@@ -368,6 +369,7 @@ private fun TarjetaHabito(
     mensajeAyer: String? = null,
     avisoFase: String? = null,
     versionMinima: String = "",
+    plan: String = "",
     antojosHoy: Int? = null,
     alCambiarAntojo: (Int) -> Unit = {},
 ) {
@@ -397,6 +399,9 @@ private fun TarjetaHabito(
             Text(pregunta, style = MaterialTheme.typography.bodyLarge)
             if (versionMinima.isNotBlank()) {
                 Text("Versión mínima: $versionMinima", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
+            }
+            if (plan.isNotBlank()) {
+                Text("Mi plan: $plan", style = MaterialTheme.typography.bodySmall, color = Paleta.TextoSecundario)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 val elegido = estado?.hoy

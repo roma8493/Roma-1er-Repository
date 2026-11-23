@@ -314,6 +314,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     )
                     Text("¿Por qué? ${p.porQue}", color = Paleta.TextoSecundario)
                     if (p.versionMinima.isNotBlank()) Text("Versión mínima: ${p.versionMinima}", color = Paleta.TextoSecundario)
+                    if (dejar && p.planSiEntonces.isNotBlank()) Text("Mi plan: ${p.planSiEntonces}", color = Paleta.TextoSecundario)
                     if (dejar) {
                         BloqueAntojo(
                             hoy = antojosDeHoy(antojos, p.id, hoy.toEpochDay()),
@@ -335,9 +336,9 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     p,
                     otrosHabitos = otrosHabitos,
                     alCancelar = { editando = false },
-                    alGuardar = { nombre, ancla, porQue, versionMinima, icono ->
+                    alGuardar = { nombre, ancla, porQue, versionMinima, icono, plan ->
                         scope.launch {
-                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue, versionMinima = versionMinima, icono = icono))
+                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue, versionMinima = versionMinima, icono = icono, planSiEntonces = plan))
                             editando = false
                             cargar()
                         }
@@ -439,8 +440,9 @@ private fun DialogoEditarPropio(
     p: HabitoPropio,
     otrosHabitos: List<String>,
     alCancelar: () -> Unit,
-    alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String, icono: String) -> Unit,
+    alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String, icono: String, plan: String) -> Unit,
 ) {
+    var plan by rememberSaveable { mutableStateOf(p.planSiEntonces) }
     var icono by rememberSaveable { mutableStateOf(p.icono.trim()) }
     var nombre by rememberSaveable { mutableStateOf(p.nombre) }
     var ancla by rememberSaveable { mutableStateOf(p.claveAncla) }
@@ -460,11 +462,14 @@ private fun DialogoEditarPropio(
                 SelectorAncla(otrosHabitos) { ancla = it }
                 CampoRom(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
                 CampoRom(versionMinima, { versionMinima = it }, label = { Text("Versión mínima (opcional)") }, modifier = Modifier.fillMaxWidth())
+                if (p.tipo == TipoPropio.DEJAR) {
+                    CampoRom(plan, { plan = it }, label = { Text("Plan «Si… entonces…» (opcional)") }, modifier = Modifier.fillMaxWidth())
+                }
                 SelectorEmoji(icono, iconoDe(p.copy(icono = ""))) { icono = it }
             }
         },
         confirmButton = {
-            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim(), versionMinima.trim(), icono) }) { Text("Guardar") }
+            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim(), versionMinima.trim(), icono, if (p.tipo == TipoPropio.DEJAR) plan.trim() else "") }) { Text("Guardar") }
         },
         dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
     )

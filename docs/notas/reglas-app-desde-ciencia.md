@@ -20,6 +20,7 @@
 | R14 | La recompensa inmediata refuerza la repetición | Mensaje breve al marcar ✓; en rachas de 3, 7, 14, 30, 60, 100, 200 y 365 días, uno especial. |
 | R15 | Los cambios de fase (día 90 y 270) son hitos que conviene notar | Aviso suave en Hoy y Detalle durante los 7 días siguientes al cambio de fase (sin guardar nada: se calcula del día del hábito). |
 | R16 | Apilar el hábito nuevo sobre uno ya instalado usa una clave contextual que ya funciona | En Nuevo hábito y Editar, botones "Después de «hábito»" completan la clave ancla con "mi hábito «X»" (el texto sigue editable; solo se guarda texto). |
+| R17 | Decidir de antemano "si pasa X, entonces hago Y" (intención de implementación) vuelve más probable actuar en el momento difícil | En hábitos DEJAR (Nuevo hábito y Editar), campo opcional "Plan «Si… entonces…»"; se ve en el Detalle y como recordatorio "Mi plan: …" en la tarjeta de Hoy. Tono de invitación, sin "debés". |
 
 ## Mapeo a funciones pedidas por el usuario
 - Gym → hábito bueno (R1, R2, R5, R10).

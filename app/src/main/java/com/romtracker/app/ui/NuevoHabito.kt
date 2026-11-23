@@ -33,7 +33,7 @@ import com.romtracker.app.logic.ICONO_HACER
 fun NuevoHabito(
     otrosHabitos: List<String>,
     alVolver: () -> Unit,
-    alCrear: (nombre: String, tipo: String, ancla: String, porQue: String, versionMinima: String, icono: String) -> Unit,
+    alCrear: (nombre: String, tipo: String, ancla: String, porQue: String, versionMinima: String, icono: String, plan: String) -> Unit,
 ) {
     BackHandler(onBack = alVolver)
 
@@ -43,6 +43,7 @@ fun NuevoHabito(
     var porQue by rememberSaveable { mutableStateOf("") }
     var versionMinima by rememberSaveable { mutableStateOf("") }
     var icono by rememberSaveable { mutableStateOf("") }
+    var plan by rememberSaveable { mutableStateOf("") }
     val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank()
 
     Column(
@@ -99,13 +100,24 @@ fun NuevoHabito(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        if (tipo == TipoPropio.DEJAR) {
+            CampoRom(
+                value = plan,
+                onValueChange = { plan = it },
+                label = { Text("Plan «Si… entonces…» (opcional)") },
+                placeholder = { Text("Si me dan ganas de fumar, entonces tomo un vaso de agua") },
+                supportingText = { Text("Decidir de antemano qué hacer en el momento difícil ayuda a sostenerlo.") },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         SelectorEmoji(icono, if (tipo == TipoPropio.DEJAR) ICONO_DEJAR else ICONO_HACER) { icono = it }
 
         BotonRom(
             texto = "Crear hábito",
             modifier = Modifier.fillMaxWidth(),
             habilitado = valido,
-            alTocar = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim(), versionMinima.trim(), icono) },
+            alTocar = { alCrear(nombre.trim(), tipo, ancla.trim(), porQue.trim(), versionMinima.trim(), icono, if (tipo == TipoPropio.DEJAR) plan.trim() else "") },
         )
     }
 }

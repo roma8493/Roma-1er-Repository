@@ -108,9 +108,9 @@ class MainActivity : ComponentActivity() {
                         abierto == PANTALLA_NUEVO_HABITO -> NuevoHabito(
                             otrosHabitos = otrosHabitos,
                             alVolver = { abierto = null },
-                            alCrear = { nombre, tipo, ancla, porQue, versionMinima, icono ->
+                            alCrear = { nombre, tipo, ancla, porQue, versionMinima, icono, plan ->
                                 scope.launch {
-                                    db.crearPropio(nombre, ancla, porQue, tipo, LocalDate.now().toEpochDay(), versionMinima, icono)
+                                    db.crearPropio(nombre, ancla, porQue, tipo, LocalDate.now().toEpochDay(), versionMinima, icono, plan)
                                     abierto = null
                                 }
                             },
