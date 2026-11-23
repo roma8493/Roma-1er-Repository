@@ -69,4 +69,6 @@
 - [x] Fase 4: tareas T4–T9 de `docs/SPEC.md` (APK 0.1) y luego ciclos iterativos (Etapa 5).
 
 ## Próximo Paso
-- Versión 1.0 CERRADA (T35–T39 confirmadas por el usuario el 2026-11-23). Decisión del usuario: la regla de no anotar días anteriores a la creación del hábito se mantiene. Siguiente: proponer una SPEC nueva o dar el proyecto por terminado (sesión limpia con `/clear`).
+- Versión 1.0 CERRADA (T35–T39 confirmadas por el usuario el 2026-11-23). Decisión del usuario: la regla de no anotar días anteriores a la creación del hábito se mantiene.
+- 2026-11-23: el usuario pidió (1) sin hábitos pre-seteados (Gym/Comida), (2) emoji por hábito, (3) más reglas de ciencia; aprobó con "sí a todo" las decisiones: Gym/Comida existentes se convierten en propios con migración, Agua queda como tarjeta opcional, checklist con ítems neutros en instalaciones nuevas, selector de emojis. Redactadas en `docs/SPEC.md` ("Versión 1.1–1.3", T40–T48), pendiente el OK del usuario a esa redacción.
+- Siguiente: T40 (datos del emoji, v1.1.0) en sesión limpia con `/clear`, una vez aprobada la SPEC.

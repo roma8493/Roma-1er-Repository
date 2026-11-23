@@ -235,3 +235,33 @@ Datos: Room v11 (tabla `antojo`: id autogenerado, habito = "PROPIO_<id>", fecha)
 - [x] T39 (R3): UI de patrones: tarjeta "Lo que se repite" en el Detalle de hábitos DEJAR con la opción más frecuente por fila y la sugerencia de entorno (o cuántos deslices faltan). Versión 1.0.4. Verifica en el celular.
 
 Criterios de aceptación 1.0: (1) en un hábito DEJAR, "Resistí un antojo" suma al conteo de hoy, de la semana y total, se puede corregir con −1, y no cambia ✓, racha, consistencia ni fase; (2) al registrar un desliz aparece el diálogo, se puede saltear y el desliz queda registrado igual; (3) con 3 o más deslices anotados el Detalle muestra el patrón y una sugerencia en tono de invitación; (4) los hábitos HACER, Gym, Comida y Agua no muestran nada nuevo; (5) borrar un hábito propio borra también sus antojos y desencadenantes; (6) tras instalar encima de 0.9.2 no se pierde ningún dato (migraciones 10→11→12); (7) una copia hecha en 1.0 se restaura y las copias 0.9 o anteriores siguen restaurando.
+
+## Versión 1.1–1.3 — Todos los hábitos los elige el usuario, emoji por hábito y más reglas de ciencia (pedido del usuario 2026-11-23; decisiones 1–4 APROBADAS por el usuario con "sí a todo"; pendiente su OK a esta redacción)
+Decisiones aprobadas:
+- **Sin hábitos pre-seteados**: Gym y Comida dejan de ser fijos. Los de quien ya los usa se **convierten en hábitos propios con migración** (historial, fase, checks de automatismo y antojos se conservan; `PROPIO_<id>`; tipo HACER; ancla, por qué y versión mínima salen del perfil). Después se pueden editar o borrar como cualquier propio.
+- **Agua**: no se convierte en hábito propio (es de vasos/meta). Queda como **tarjeta opcional**: se activa o se quita desde Ajustes (`Perfil.aguaActiva`); quitarla no borra el historial. En una instalación nueva viene desactivada.
+- **Checklist de la noche anterior**: en instalaciones nuevas arranca con ítems neutros editables (ej. "Dejé lista la ropa de mañana"). Quien ya lo usa conserva sus ítems.
+- **Emoji por hábito**: selector con ~30 emojis sugeridos (💪 🥗 💧 📚 🚭 😴…) + campo para escribir otro; sin elección se asigna uno por defecto según el tipo. Se ve en la tarjeta de Hoy, en el Resumen y en el título del Detalle.
+- **Bienvenida**: pide solo el nombre y la hora de salida; ancla y "por qué" se piden por hábito al crearlo (ya existe en Nuevo hábito). Hoy sin hábitos muestra un estado vacío con "Agregar mi primer hábito".
+Riesgos: la conversión toca claves en `registro`, `automatismo`, `antojo` y la copia de seguridad; hay que probar instalar encima de 1.0.4 sin perder datos y restaurar una copia vieja (con GYM/COMIDA) que se convierta al restaurar. La conversión y el retiro de las ramas fijas van juntos en T42 para que la app nunca quede a medias.
+
+- [ ] T40: Datos del emoji: columna `icono` (texto, vacío = por defecto) en `habito_propio` con `Migration(12,13)` (Room v13, solo ALTER), `crearPropio(..., icono)`, función `iconoDe(propio)` con el emoji por defecto según tipo, copia de seguridad v13 ("icono" opcional; las 1–12 se leen con vacío), tests (`CopiaTest`, `PropiosTest`). Sin UI todavía. Versión 1.1.0 (sin cambio visible).
+- [ ] T41: UI del emoji: selector (sugeridos + campo libre) en Nuevo hábito y en Editar propio; el emoji aparece en la tarjeta de Hoy, en el Resumen y en el título del Detalle. Versión 1.1.1. Verifica en el celular.
+- [ ] T42: Conversión y retiro de Gym/Comida: `Migration(13,14)` convierte Gym y Comida existentes en hábitos propios HACER (con sus registros, automatismos y antojos, y con la ancla, el por qué y la versión mínima tomados del perfil, icono 💪 y 🥗) y deja los campos de Gym del perfil sin uso; la copia v14 convierte al restaurar copias 1–13 con GYM/COMIDA; se quitan las ramas fijas de Hoy, Resumen, Detalle, Automatismo y el cruce de ánimo (que pasa a iterar los propios HACER); tests de la conversión. Versión 1.2.0. Verifica en el celular (instalar encima de 1.1.1: tu Gym y tu Comida deben aparecer como hábitos propios con todo su historial).
+- [ ] T43: Bienvenida y estado vacío: Bienvenida solo con nombre y hora de salida; Hoy sin hábitos muestra "Agregar mi primer hábito"; Ajustes sin ancla/por qué/versión mínima de Gym; checklist con ítems neutros en instalaciones nuevas (y en la copia sin checklist). Versión 1.2.1. Verifica en el celular (idealmente con la app recién instalada o con datos borrados).
+- [ ] T44: Agua opcional: `Perfil.aguaActiva` con `Migration(14,15)` (quien ya registró agua queda activa), interruptor en Ajustes "Mostrar la tarjeta de agua", Hoy/Resumen/cruce de ánimo/automatismo respetan el interruptor, copia v15. Versión 1.2.2. Verifica en el celular.
+
+### Versión 1.3 — Más reglas de ciencia (primero se anotan en `docs/notas/reglas-app-desde-ciencia.md` como R13–R17 con su fundamento; tono de invitación, R8)
+- R13 "Nunca falles dos veces": tras un día sin hacerlo, la tarjeta de Hoy dice "Mañana es lo que importa".
+- R14 Recompensa inmediata: mensaje breve de celebración al marcar ✓.
+- R15 Alerta de fase: aviso suave al cruzar el día 90 y el día 270 de un hábito.
+- R16 Apilar hábitos: al crear un hábito se puede elegir como ancla otro hábito existente ("Después de [hábito], voy a…").
+- R17 "Si… entonces…" en hábitos DEJAR: plan opcional ("Si me dan ganas de X, entonces Y") visible en el Detalle y en Hoy.
+- R12 sigue fuera (exige notificaciones del sistema).
+
+- [ ] T45: R13+R14+R15 (solo lógica y textos, sin migración): notas en `docs/notas/`, funciones puras testeadas (`rachaRota`/`falloAyer`, `cruzoFase`), mensajes en Hoy y Detalle. Versión 1.3.0. Verifica en el celular.
+- [ ] T46: R16 apilar hábitos: selector de ancla "Después de otro hábito" en Nuevo hábito y Editar (guarda el texto, sin migración), notas. Versión 1.3.1. Verifica en el celular.
+- [ ] T47: R17 datos: columna `planSiEntonces` (texto) en `habito_propio` con `Migration(15,16)`, copia v16, tests. Sin UI. Versión 1.3.2 (sin cambio visible).
+- [ ] T48: R17 UI: campo opcional en Nuevo hábito/Editar solo para DEJAR, se muestra en el Detalle y como recordatorio en la tarjeta de Hoy. Versión 1.3.3. Verifica en el celular.
+
+Criterios de aceptación 1.1–1.3: (1) un hábito nuevo permite elegir emoji y este se ve en Hoy, Resumen y Detalle; (2) tras instalar encima de 1.0.4 no se pierde ningún dato y Gym y Comida aparecen como propios con su historial, fase y automatismo; (3) una app recién instalada no trae ningún hábito, y Hoy invita a agregar el primero; (4) el agua se puede activar y quitar sin perder historial; (5) copias de seguridad de 1.0 o anteriores (con GYM/COMIDA) se restauran convertidas; (6) ningún texto nuevo usa "debés" ni culpa, y ninguno menciona "21 días"; (7) R13–R17 solo aparecen donde corresponden (R17 solo en DEJAR).
