@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
                         perfil == null -> Bienvenida { nuevo ->
                             scope.launch {
                                 db.perfilDao().guardar(nuevo)
+                                db.sembrarChecklistSiVacia()
                                 perfil = nuevo
                             }
                         }

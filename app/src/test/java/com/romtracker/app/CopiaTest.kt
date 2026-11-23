@@ -358,4 +358,30 @@ class CopiaTest {
         val mala = copia.copy(habitosPropios = listOf(propioDejar), desencadenantes = listOf(Desencadenante(1, claveRegistroPropio(1), 20100, lugar = "Luna")))
         assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
     }
+
+    @Test fun idaYVueltaConservaAguaActiva() {
+        val activa = copia.copy(perfil = copia.perfil.copy(aguaActiva = true))
+        assertEquals(true, CopiaJson.deTexto(CopiaJson.aTexto(activa)).perfil.aguaActiva)
+        assertEquals(false, CopiaJson.deTexto(CopiaJson.aTexto(copia)).perfil.aguaActiva)
+    }
+
+    @Test fun copiaAnteriorALa15ActivaAguaSiTeniaAgua() {
+        // `copia` trae el hábito Agua; sin el campo "aguaActiva" (copia 14) queda activa.
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(copia))
+        raiz.getJSONObject("perfil").remove("aguaActiva")
+        raiz.put("version", 14)
+        assertEquals(true, CopiaJson.deTexto(raiz.toString()).perfil.aguaActiva)
+        // Sin agua en la copia, queda desactivada.
+        val sinAgua = org.json.JSONObject(CopiaJson.aTexto(copia.copy(habitos = emptyList())))
+        sinAgua.getJSONObject("perfil").remove("aguaActiva")
+        sinAgua.put("version", 14)
+        assertEquals(false, CopiaJson.deTexto(sinAgua.toString()).perfil.aguaActiva)
+    }
+
+    @Test fun copiaSinChecklistNiMarcasViejasSiembraItemsNeutros() {
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(copia.copy(checklists = emptyList())))
+        raiz.remove("checklistItems"); raiz.remove("checklistMarcas"); raiz.put("version", 5)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals(com.romtracker.app.logic.itemsNeutros(), leida.checklistItems)
+    }
 }

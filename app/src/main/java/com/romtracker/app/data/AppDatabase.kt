@@ -10,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.romtracker.app.logic.FijosViejos
 import com.romtracker.app.logic.ITEMS_POR_DEFECTO
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
+import com.romtracker.app.logic.itemsNeutros
 import com.romtracker.app.logic.limpiarTextoItem
 import com.romtracker.app.logic.puedeAgregarItem
 import com.romtracker.app.logic.puedeBorrarItem
@@ -17,7 +18,7 @@ import com.romtracker.app.logic.puedeBorrarItem
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
         ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class, Desencadenante::class],
-    version = 14,
+    version = 15,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -81,6 +82,13 @@ abstract class AppDatabase : RoomDatabase() {
     /** Si el día deja de ser desliz (✓ o sin dato), su desencadenante ya no corresponde. */
     suspend fun borrarDesencadenanteDelDia(id: Long, fecha: Long) =
         desencadenanteDao().borrarDeDia(claveRegistroPropio(id), fecha)
+
+    /** Instalación nueva: si no hay ítems de checklist, siembra los neutros (editables desde Hoy). */
+    suspend fun sembrarChecklistSiVacia() = withTransaction {
+        if (checklistItemDao().todos().isEmpty()) {
+            itemsNeutros().forEach { checklistItemDao().crear(it.copy(id = 0)) }
+        }
+    }
 
     /** Agrega un ítem al final de la checklist. Devuelve false si ya hay [MAX_ITEMS_CHECKLIST] o el texto está vacío. */
     suspend fun agregarItemChecklist(texto: String): Boolean = withTransaction {
@@ -322,6 +330,17 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /** 1.2.2: tarjeta de agua opcional. Quien ya registró agua (hábito o vasos) queda con la tarjeta activa. */
+    val MIGRACION_14_15 = object : Migration(14, 15) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `perfil` ADD COLUMN `aguaActiva` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL(
+                "UPDATE `perfil` SET `aguaActiva` = 1 WHERE EXISTS (SELECT 1 FROM `habito` WHERE `tipo` = 'AGUA') " +
+                    "OR EXISTS (SELECT 1 FROM `agua`)"
+            )
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -348,7 +367,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13, MIGRACION_13_14).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13, MIGRACION_13_14, MIGRACION_14_15).build().also { instancia = it }
             }
     }
 }

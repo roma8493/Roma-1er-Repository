@@ -88,12 +88,14 @@ fun Resumen(
         ) { dia -> celdaSiNo(registros[clave]?.get(dia)) }
 
         val lista = mutableListOf<Fila>()
-        lista += Fila("Agua", if (habitos.containsKey(TipoHabito.AGUA)) TipoHabito.AGUA else null) { dia ->
-            val a = aguas[dia]
-            when {
-                a == null -> Celda()
-                cumplidoAgua(a.vasos, a.meta) -> Celda("✓", Tono.OK)
-                else -> Celda(a.vasos.toString(), Tono.ATENCION)
+        if (db.perfilDao().obtener()?.aguaActiva == true) {
+            lista += Fila("Agua", if (habitos.containsKey(TipoHabito.AGUA)) TipoHabito.AGUA else null) { dia ->
+                val a = aguas[dia]
+                when {
+                    a == null -> Celda()
+                    cumplidoAgua(a.vasos, a.meta) -> Celda("✓", Tono.OK)
+                    else -> Celda(a.vasos.toString(), Tono.ATENCION)
+                }
             }
         }
         db.habitoPropioDao().todos().forEach { p ->

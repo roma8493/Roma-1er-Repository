@@ -15,6 +15,15 @@ val ITEMS_POR_DEFECTO = listOf(
     Triple(3L, "Decidí a qué hora voy", 3),
 )
 
+/** Ítems neutros para instalaciones nuevas (no hablan de gym ni de comida). */
+val ITEMS_NEUTROS = listOf(
+    Triple(1L, "Dejé lista la ropa de mañana", 1),
+    Triple(2L, "Dejé preparado lo que voy a necesitar", 2),
+    Triple(3L, "Decidí a qué hora empiezo", 3),
+)
+
+fun itemsNeutros(): List<ChecklistItem> = ITEMS_NEUTROS.map { (id, texto, orden) -> ChecklistItem(id, texto, orden) }
+
 fun puedeAgregarItem(cantidadActual: Int) = cantidadActual < MAX_ITEMS_CHECKLIST
 
 fun puedeBorrarItem(cantidadActual: Int) = cantidadActual > MIN_ITEMS_CHECKLIST

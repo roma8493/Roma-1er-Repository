@@ -5,6 +5,7 @@ import com.romtracker.app.logic.FijosViejos
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
 import com.romtracker.app.logic.OpcionesDesencadenante
 import com.romtracker.app.logic.convertirFijos
+import com.romtracker.app.logic.itemsNeutros
 import com.romtracker.app.logic.itemsPorDefecto
 import com.romtracker.app.logic.lunesDe
 import com.romtracker.app.logic.marcasDeChecklistVieja
@@ -32,8 +33,8 @@ data class Copia(
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". 13 = agrega "icono" en cada hábito propio. 14 = Gym y Comida son hábitos propios (las copias 1–13 con GYM/COMIDA se convierten al leer). Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 14
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". 13 = agrega "icono" en cada hábito propio. 14 = Gym y Comida son hábitos propios (las copias 1–13 con GYM/COMIDA se convierten al leer). 15 = agrega "aguaActiva" en el perfil (las anteriores la activan si tenían agua). Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 15
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -48,6 +49,7 @@ object CopiaJson {
             put("metaAgua", c.perfil.metaAgua)
             put("tema", TemaPerfil.nombre(c.perfil.tema))
             put("versionMinima", c.perfil.versionMinima)
+            put("aguaActiva", c.perfil.aguaActiva)
         })
         raiz.put("habitos", JSONArray().also { a ->
             c.habitos.forEach { a.put(JSONObject().put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)) }
@@ -167,6 +169,9 @@ object CopiaJson {
                 }
                 Registro(h, it.getLong("fecha"), it.getBoolean("cumplido"))
             }
+            // Las copias anteriores a la versión 15 no traen "aguaActiva": queda activa si tenían agua.
+            val aguaActiva = if (p.has("aguaActiva")) p.getBoolean("aguaActiva")
+            else habitos.any { it.tipo == TipoHabito.AGUA } || (raiz.optJSONArray("aguas")?.length() ?: 0) > 0
             val checklists = raiz.getJSONArray("checklists").objetos().map {
                 Checklist(it.getLong("paraFecha"), it.getBoolean("bolso"), it.getBoolean("comida"), it.getBoolean("hora"))
             }
@@ -185,7 +190,7 @@ object CopiaJson {
             val itemsJson = raiz.optJSONArray("checklistItems")
             val items = itemsJson?.objetos()?.map {
                 ChecklistItem(it.getLong("id"), it.getString("texto"), it.getInt("orden"))
-            } ?: itemsPorDefecto()
+            } ?: if (raiz.getJSONArray("checklists").length() > 0) itemsPorDefecto() else itemsNeutros()
             if (items.size > MAX_ITEMS_CHECKLIST) throw CopiaInvalida("La copia tiene demasiados ítems de checklist.")
             val idsItems = items.map { it.id }.toSet()
             val marcas = raiz.optJSONArray("checklistMarcas")?.objetos()?.map {
@@ -240,7 +245,7 @@ object CopiaJson {
                     perfil.claveAncla, perfil.porQue, perfil.versionMinima,
                 )
             } else DatosConvertibles(habitos, propios, registros, automatismos)
-            return Copia(perfil, conv.habitos, conv.registros, checklists, aguas, animos, conv.propios, items, marcas, conv.automatismos, revisiones, antojos, desencadenantes)
+            return Copia(perfil.copy(aguaActiva = aguaActiva), conv.habitos, conv.registros, checklists, aguas, animos, conv.propios, items, marcas, conv.automatismos, revisiones, antojos, desencadenantes)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

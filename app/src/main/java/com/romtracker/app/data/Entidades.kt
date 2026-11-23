@@ -18,6 +18,8 @@ data class Perfil(
     @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.CLARO,
     /** Sin uso desde 1.2.0 (era la versión mínima del Gym; ahora vive en cada hábito propio). */
     @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
+    /** ¿Se muestra la tarjeta de Agua? Falso en instalaciones nuevas; se activa desde Ajustes. */
+    @ColumnInfo(defaultValue = "0") val aguaActiva: Boolean = false,
 )
 
 /**

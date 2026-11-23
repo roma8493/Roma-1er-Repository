@@ -94,6 +94,7 @@ fun Hoy(
     var deslizDe by remember { mutableStateOf<HabitoPropio?>(null) }
     // Antojos resistidos (R11) de los hábitos propios DEJAR.
     var antojos by remember { mutableStateOf<List<Antojo>>(emptyList()) }
+    var cargado by remember { mutableStateOf(false) }
     var editandoChecklist by remember { mutableStateOf(false) }
     // Checklist editable: ítems actuales y marcas de anoche (para hoy) y de esta noche (para mañana).
     var itemsChecklist by remember { mutableStateOf<List<ChecklistItem>>(emptyList()) }
@@ -144,6 +145,7 @@ fun Hoy(
     LaunchedEffect(Unit) {
         antojos = db.antojoDao().todos()
         propios = cargarPropios()
+        cargado = true
         agua = cargarAgua()
         animo = db.animoDao().todos().firstOrNull { it.fecha == fecha.toEpochDay() }?.valor
         itemsChecklist = db.checklistItemDao().todos()
@@ -152,7 +154,8 @@ fun Hoy(
 
         // Check de automatismo: solo hábitos HACER (Agua y propios HACER); no Ánimo ni DEJAR.
         val hacer = listOfNotNull(
-            db.habitoDao().obtener(TipoHabito.AGUA)?.let { Triple(TipoHabito.AGUA, "Agua", it.fechaInicio) },
+            db.habitoDao().obtener(TipoHabito.AGUA)?.takeIf { perfil.aguaActiva }
+                ?.let { Triple(TipoHabito.AGUA, "Agua", it.fechaInicio) },
         ) + propios.filter { (p, _) -> p.tipo == TipoPropio.HACER }
             .map { (p, _) -> Triple(claveRegistroPropio(p.id), p.nombre, p.fechaInicio) }
         val claves = habitosQueTocan(
@@ -236,11 +239,27 @@ fun Hoy(
             )
         }
 
-        TarjetaAgua(
-            estado = agua,
-            alAbrir = { alAbrir(TipoHabito.AGUA) },
-            alCambiar = { cambiarVasos(it) },
-        )
+        if (cargado && propios.isEmpty()) {
+            TarjetaRom(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Todavía no tenés hábitos", style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
+                    Text(
+                        "Empezá por uno solo, chico. Lo demás se agrega con el tiempo.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Paleta.TextoSecundario,
+                    )
+                    BotonRom("Agregar mi primer hábito", modifier = Modifier.fillMaxWidth(), alTocar = alNuevoHabito)
+                }
+            }
+        }
+
+        if (perfil.aguaActiva) {
+            TarjetaAgua(
+                estado = agua,
+                alAbrir = { alAbrir(TipoHabito.AGUA) },
+                alCambiar = { cambiarVasos(it) },
+            )
+        }
 
         TarjetaAnimo(
             valor = animo,

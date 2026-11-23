@@ -65,7 +65,8 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
         val propios = db.habitoPropioDao().todos().filter { it.tipo == TipoPropio.HACER }.map {
             "${iconoDe(it)} ${it.nombre}" to deHabito(db.registroDao().todos(claveRegistroPropio(it.id)))
         }
-        registros = propios + ("Agua" to registrosDeAgua(db.aguaDao().todas()))
+        val conAgua = db.perfilDao().obtener()?.aguaActiva == true
+        registros = if (conAgua) propios + ("Agua" to registrosDeAgua(db.aguaDao().todas())) else propios
     }
 
     LaunchedEffect(Unit) { cargar() }

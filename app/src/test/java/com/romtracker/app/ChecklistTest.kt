@@ -44,4 +44,11 @@ class ChecklistTest {
         assertTrue(estaHecho(marcas, 1))
         assertFalse(estaHecho(marcas, 2))
     }
+
+    @Test fun itemsNeutrosNoHablanDeGymNiComida() {
+        val items = itemsNeutros()
+        assertEquals(3, items.size)
+        assertTrue(items.none { it.texto.contains("gym", true) || it.texto.contains("comida", true) })
+        assertTrue(items.all { it.texto.length <= LARGO_MAX_ITEM })
+    }
 }

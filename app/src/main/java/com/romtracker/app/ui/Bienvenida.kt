@@ -2,7 +2,6 @@ package com.romtracker.app.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -27,97 +25,45 @@ import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Perfil
 
 /**
- * Pantalla P1: 3 pasos. Solo llama a [alTerminar] al final con el perfil completo;
- * si se cierra a mitad de camino no se guarda nada (la app vuelve al paso 1).
+ * Pantalla P1: un solo paso (nombre y hora de salida). La clave ancla y el "por qué" se piden por hábito
+ * al crearlo. Solo llama a [alTerminar] al final; si se cierra antes no se guarda nada.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bienvenida(alTerminar: (Perfil) -> Unit) {
-    var paso by rememberSaveable { mutableIntStateOf(1) }
     var nombre by rememberSaveable { mutableStateOf("") }
-    var hora by rememberSaveable { mutableIntStateOf(18) }
-    var minuto by rememberSaveable { mutableIntStateOf(0) }
-    var ancla by rememberSaveable { mutableStateOf("") }
-    var porQue by rememberSaveable { mutableStateOf("") }
-    val relojState = rememberTimePickerState(initialHour = hora, initialMinute = minuto, is24Hour = true)
-
-    val puedeSeguir = when (paso) {
-        1 -> nombre.isNotBlank()
-        2 -> ancla.isNotBlank()
-        else -> porQue.isNotBlank()
-    }
+    val relojState = rememberTimePickerState(initialHour = 18, initialMinute = 0, is24Hour = true)
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Text("PASO $paso DE 3", style = MaterialTheme.typography.labelMedium, color = Paleta.TextoSecundario)
+        Text("¿Cómo te llamás?", style = MaterialTheme.typography.headlineMedium)
+        CampoRom(
+            value = nombre,
+            onValueChange = { nombre = it },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+        )
+        Spacer(Modifier.height(8.dp))
+        Text("¿A qué hora salís del trabajo?", style = MaterialTheme.typography.headlineMedium)
+        RelojRom(relojState)
 
-        when (paso) {
-            1 -> {
-                Text("¿Cómo te llamás?", style = MaterialTheme.typography.headlineMedium)
-                CampoRom(
-                    value = nombre,
-                    onValueChange = { nombre = it },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+        BotonRom(
+            texto = "Empezar",
+            modifier = Modifier.fillMaxWidth(),
+            habilitado = nombre.isNotBlank(),
+            alTocar = {
+                alTerminar(
+                    Perfil(
+                        nombre = nombre.trim(),
+                        horaSalidaMinutos = relojState.hour * 60 + relojState.minute,
+                        claveAncla = "",
+                        porQue = "",
+                    )
                 )
-                Spacer(Modifier.height(8.dp))
-                Text("¿A qué hora salís del trabajo?", style = MaterialTheme.typography.headlineMedium)
-                RelojRom(relojState)
-            }
-            2 -> {
-                Text("Tu clave ancla", style = MaterialTheme.typography.headlineMedium)
-                Text("Un hábito se apoya en algo que ya hacés todos los días.", color = Paleta.TextoSecundario)
-                CampoRom(
-                    value = ancla,
-                    onValueChange = { ancla = it },
-                    label = { Text("Después de…") },
-                    placeholder = { Text("salir del trabajo") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                if (ancla.isNotBlank()) Text("Después de ${ancla.trim()}, voy al gym.", style = MaterialTheme.typography.titleMedium)
-                BotonRom("Usar: salir del trabajo", destacado = false) { ancla = "salir del trabajo" }
-            }
-            else -> {
-                Text("¿Por qué es importante para vos?", style = MaterialTheme.typography.headlineMedium)
-                CampoRom(
-                    value = porQue,
-                    onValueChange = { porQue = it },
-                    minLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (paso > 1) {
-                BotonRom("Atrás", destacado = false) { paso -= 1 }
-            }
-            BotonRom(
-                texto = if (paso < 3) "Siguiente" else "Empezar",
-                modifier = Modifier.weight(1f),
-                habilitado = puedeSeguir,
-                alTocar = {
-                    if (paso == 1) {
-                        hora = relojState.hour
-                        minuto = relojState.minute
-                    }
-                    if (paso < 3) {
-                        paso += 1
-                    } else {
-                        alTerminar(
-                            Perfil(
-                                nombre = nombre.trim(),
-                                horaSalidaMinutos = hora * 60 + minuto,
-                                claveAncla = ancla.trim(),
-                                porQue = porQue.trim(),
-                            )
-                        )
-                    }
-                },
-            )
-        }
+            },
+        )
     }
 }

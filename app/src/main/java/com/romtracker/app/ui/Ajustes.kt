@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,19 +27,17 @@ import androidx.compose.ui.unit.dp
 import com.romtracker.app.data.Perfil
 import com.romtracker.app.data.TemaPerfil
 
-/** Pantalla de Ajustes: edita los 4 datos de la Bienvenida. No toca registros, fase ni consistencia. */
+/** Pantalla de Ajustes: nombre, hora de salida, tema y tarjeta de agua. No toca registros, fase ni consistencia. */
 @Composable
 fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, alCambiarTema: (Int) -> Unit) {
     BackHandler(onBack = alVolver)
 
     var nombre by rememberSaveable { mutableStateOf(perfil.nombre) }
-    var ancla by rememberSaveable { mutableStateOf(perfil.claveAncla) }
-    var porQue by rememberSaveable { mutableStateOf(perfil.porQue) }
-    var versionMinima by rememberSaveable { mutableStateOf(perfil.versionMinima) }
+    var aguaActiva by rememberSaveable { mutableStateOf(perfil.aguaActiva) }
     var metaAgua by rememberSaveable { mutableStateOf(perfil.metaAgua.toString()) }
     var horaSalida by rememberSaveable { mutableStateOf(perfil.horaSalidaMinutos) }
     val metaValida = metaAgua.toIntOrNull()?.let { it in 1..30 } == true
-    val valido = nombre.isNotBlank() && ancla.isNotBlank() && porQue.isNotBlank() && metaValida
+    val valido = nombre.isNotBlank() && (!aguaActiva || metaValida)
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -70,32 +70,17 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
         Text("Hora de salida del trabajo", style = MaterialTheme.typography.titleMedium)
         HoraSalidaRom(horaSalida) { horaSalida = it }
 
-        CampoRom(
-            value = ancla,
-            onValueChange = { ancla = it },
-            label = { Text("Clave ancla: Después de…") },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-        )
-        if (ancla.isNotBlank()) Text("Después de ${ancla.trim()}, voy al gym.", color = Paleta.TextoSecundario)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Mostrar la tarjeta de agua", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Switch(checked = aguaActiva, onCheckedChange = { aguaActiva = it })
+        }
+        if (!aguaActiva) Text("Si la ocultás, tu historial de agua se conserva.", color = Paleta.TextoSecundario)
 
-        CampoRom(
-            value = porQue,
-            onValueChange = { porQue = it },
-            label = { Text("¿Por qué es importante para vos?") },
-            minLines = 3,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        CampoRom(
-            value = versionMinima,
-            onValueChange = { versionMinima = it },
-            label = { Text("Versión mínima del gym (opcional)") },
-            placeholder = { Text("solo 20 minutos") },
-            supportingText = { Text("Para los días difíciles: algo chico que igual cuenta.") },
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        CampoRom(
+        if (aguaActiva) CampoRom(
             value = metaAgua,
             onValueChange = { metaAgua = it.filter(Char::isDigit).take(2) },
             label = { Text("Meta de vasos de agua por día (1 a 30)") },
@@ -115,10 +100,8 @@ fun Ajustes(perfil: Perfil, alVolver: () -> Unit, alGuardar: (Perfil) -> Unit, a
                     perfil.copy(
                         nombre = nombre.trim(),
                         horaSalidaMinutos = horaSalida,
-                        claveAncla = ancla.trim(),
-                        porQue = porQue.trim(),
-                        versionMinima = versionMinima.trim(),
-                        metaAgua = metaAgua.toInt(),
+                        aguaActiva = aguaActiva,
+                        metaAgua = metaAgua.toIntOrNull()?.takeIf { it in 1..30 } ?: perfil.metaAgua,
                     )
                 )
             },
