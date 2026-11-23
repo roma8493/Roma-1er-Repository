@@ -113,6 +113,8 @@ data class HabitoPropio(
     @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
     /** Emoji del hábito. Vacío = el de por defecto según el tipo (ver `iconoDe`). */
     @ColumnInfo(defaultValue = "''") val icono: String = "",
+    /** Plan "Si…, entonces…" (R17), solo para hábitos DEJAR. Vacío = sin plan. */
+    @ColumnInfo(defaultValue = "''") val planSiEntonces: String = "",
 )
 
 /**

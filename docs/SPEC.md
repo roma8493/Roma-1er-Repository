@@ -261,7 +261,7 @@ Riesgos: la conversión toca claves en `registro`, `automatismo`, `antojo` y la 
 
 - [x] T45: R13+R14+R15 (solo lógica y textos, sin migración): notas en `docs/notas/`, funciones puras testeadas (`rachaRota`/`falloAyer`, `cruzoFase`), mensajes en Hoy y Detalle. Versión 1.3.0. Verifica en el celular.
 - [x] T46: R16 apilar hábitos: selector de ancla "Después de otro hábito" en Nuevo hábito y Editar (guarda el texto, sin migración), notas. Versión 1.3.1. Verifica en el celular.
-- [ ] T47: R17 datos: columna `planSiEntonces` (texto) en `habito_propio` con `Migration(15,16)`, copia v16, tests. Sin UI. Versión 1.3.2 (sin cambio visible).
+- [x] T47: R17 datos: columna `planSiEntonces` (texto) en `habito_propio` con `Migration(15,16)`, copia v16, tests. Sin UI. Versión 1.3.2 (sin cambio visible).
 - [ ] T48: R17 UI: campo opcional en Nuevo hábito/Editar solo para DEJAR, se muestra en el Detalle y como recordatorio en la tarjeta de Hoy. Versión 1.3.3. Verifica en el celular.
 
 Criterios de aceptación 1.1–1.3: (1) un hábito nuevo permite elegir emoji y este se ve en Hoy, Resumen y Detalle; (2) tras instalar encima de 1.0.4 no se pierde ningún dato y Gym y Comida aparecen como propios con su historial, fase y automatismo; (3) una app recién instalada no trae ningún hábito, y Hoy invita a agregar el primero; (4) el agua se puede activar y quitar sin perder historial; (5) copias de seguridad de 1.0 o anteriores (con GYM/COMIDA) se restauran convertidas; (6) ningún texto nuevo usa "debés" ni culpa, y ninguno menciona "21 días"; (7) R13–R17 solo aparecen donde corresponden (R17 solo en DEJAR).

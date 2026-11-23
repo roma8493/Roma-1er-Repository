@@ -142,6 +142,29 @@ class CopiaTest {
         assertEquals(c, leida)
     }
 
+    @Test fun idaYVueltaConservaElPlanSiEntonces() {
+        val c = copia.copy(
+            habitosPropios = listOf(propio.copy(tipo = TipoPropio.DEJAR, planSiEntonces = "Si me dan ganas, entonces tomo agua")),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val leida = CopiaJson.deTexto(CopiaJson.aTexto(c))
+        assertEquals(c, leida)
+        assertEquals("Si me dan ganas, entonces tomo agua", leida.habitosPropios.single().planSiEntonces)
+    }
+
+    @Test fun copiaViejaSinPlanSiEntoncesSeRestauraConPlanVacio() {
+        val c = copia.copy(
+            habitosPropios = listOf(propio),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(c))
+        raiz.getJSONArray("habitosPropios").getJSONObject(0).remove("planSiEntonces")
+        raiz.put("version", 15)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals("", leida.habitosPropios.single().planSiEntonces)
+        assertEquals(c, leida)
+    }
+
     @Test fun faltanCamposSeRechaza() {
         invalida("""{"app":"RomTracker","version":1}""")
     }

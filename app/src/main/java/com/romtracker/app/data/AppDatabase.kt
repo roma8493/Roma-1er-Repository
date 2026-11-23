@@ -18,7 +18,7 @@ import com.romtracker.app.logic.puedeBorrarItem
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
         ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class, Desencadenante::class],
-    version = 15,
+    version = 16,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -52,9 +52,11 @@ abstract class AppDatabase : RoomDatabase() {
     /** Crea un hábito propio; su inicio es [hoy]. Devuelve su id. */
     suspend fun crearPropio(
         nombre: String, claveAncla: String, porQue: String, tipo: String, hoy: Long, versionMinima: String = "",
-        icono: String = "",
+        icono: String = "", planSiEntonces: String = "",
     ): Long =
-        habitoPropioDao().crear(HabitoPropio(0, nombre.trim(), claveAncla.trim(), porQue.trim(), tipo, hoy, versionMinima.trim(), icono.trim()))
+        habitoPropioDao().crear(
+            HabitoPropio(0, nombre.trim(), claveAncla.trim(), porQue.trim(), tipo, hoy, versionMinima.trim(), icono.trim(), planSiEntonces.trim())
+        )
 
     /** Borra el hábito propio y todo su historial, en una sola transacción. */
     suspend fun borrarPropio(id: Long) = withTransaction {
@@ -341,6 +343,13 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /** 1.3.2: plan "Si…, entonces…" (R17) por hábito propio. Solo agrega una columna vacía (= sin plan). */
+    val MIGRACION_15_16 = object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `habito_propio` ADD COLUMN `planSiEntonces` TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -367,7 +376,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13, MIGRACION_13_14, MIGRACION_14_15).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13, MIGRACION_13_14, MIGRACION_14_15, MIGRACION_15_16).build().also { instancia = it }
             }
     }
 }
