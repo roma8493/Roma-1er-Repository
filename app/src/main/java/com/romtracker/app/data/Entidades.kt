@@ -109,6 +109,8 @@ data class HabitoPropio(
     val fechaInicio: Long,
     /** Versión mínima (R10), p. ej. "solo 5 min". Vacío = sin versión mínima. */
     @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
+    /** Emoji del hábito. Vacío = el de por defecto según el tipo (ver `iconoDe`). */
+    @ColumnInfo(defaultValue = "''") val icono: String = "",
 )
 
 /**

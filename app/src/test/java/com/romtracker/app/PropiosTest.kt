@@ -1,5 +1,6 @@
 package com.romtracker.app
 
+import com.romtracker.app.data.HabitoPropio
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.data.claveRegistroPropio
@@ -54,5 +55,17 @@ class PropiosTest {
         )
         assertEquals(2, rachaActual(inicio, hoy, regs))
         assertEquals(diaDelHabito(inicio, hoy), 5)
+    }
+
+    @Test fun iconoVacioUsaElPorDefectoSegunElTipo() {
+        val hacer = HabitoPropio(1, "Leer", "", "", TipoPropio.HACER, 20000)
+        assertEquals(ICONO_HACER, iconoDe(hacer))
+        assertEquals(ICONO_DEJAR, iconoDe(hacer.copy(tipo = TipoPropio.DEJAR)))
+        assertEquals(ICONO_HACER, iconoDe(hacer.copy(icono = "   ")))
+    }
+
+    @Test fun iconoElegidoTienePrioridad() {
+        val dejar = HabitoPropio(2, "Fumar", "", "", TipoPropio.DEJAR, 20000, icono = "🚭")
+        assertEquals("🚭", iconoDe(dejar))
     }
 }

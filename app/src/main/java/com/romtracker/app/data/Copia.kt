@@ -29,8 +29,8 @@ data class Copia(
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 12
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". 13 = agrega "icono" en cada hábito propio. Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 13
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -75,7 +75,7 @@ object CopiaJson {
                 a.put(
                     JSONObject().put("id", it.id).put("nombre", it.nombre).put("claveAncla", it.claveAncla)
                         .put("porQue", it.porQue).put("tipo", it.tipo).put("fechaInicio", it.fechaInicio)
-                        .put("versionMinima", it.versionMinima)
+                        .put("versionMinima", it.versionMinima).put("icono", it.icono)
                 )
             }
         })
@@ -149,6 +149,8 @@ object CopiaJson {
                 HabitoPropio(
                     it.getLong("id"), it.getString("nombre"), it.getString("claveAncla"),
                     it.getString("porQue"), tipo, it.getLong("fechaInicio"), it.optString("versionMinima", ""),
+                    // Las copias anteriores a la versión 13 no traen el icono: queda vacío (emoji por defecto).
+                    it.optString("icono", ""),
                 )
             } ?: emptyList()
             val clavesPropias = propios.map { claveRegistroPropio(it.id) }.toSet()

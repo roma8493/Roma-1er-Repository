@@ -124,6 +124,29 @@ class CopiaTest {
         assertEquals(c, leida)
     }
 
+    @Test fun idaYVueltaConservaElIcono() {
+        val c = copia.copy(
+            habitosPropios = listOf(propio.copy(icono = "📚")),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val leida = CopiaJson.deTexto(CopiaJson.aTexto(c))
+        assertEquals(c, leida)
+        assertEquals("📚", leida.habitosPropios.single().icono)
+    }
+
+    @Test fun copiaViejaSinIconoSeRestauraConIconoVacio() {
+        val c = copia.copy(
+            habitosPropios = listOf(propio),
+            registros = copia.registros + Registro(claveRegistroPropio(3), 20010, true),
+        )
+        val raiz = org.json.JSONObject(CopiaJson.aTexto(c))
+        raiz.getJSONArray("habitosPropios").getJSONObject(0).remove("icono")
+        raiz.put("version", 12)
+        val leida = CopiaJson.deTexto(raiz.toString())
+        assertEquals("", leida.habitosPropios.single().icono)
+        assertEquals(c, leida)
+    }
+
     @Test fun faltanCamposSeRechaza() {
         invalida("""{"app":"RomTracker","version":1}""")
     }

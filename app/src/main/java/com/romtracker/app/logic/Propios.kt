@@ -1,5 +1,6 @@
 package com.romtracker.app.logic
 
+import com.romtracker.app.data.HabitoPropio
 import com.romtracker.app.data.Registro
 import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.data.claveRegistroPropio
@@ -22,3 +23,13 @@ fun registrosDePropio(id: Long, todos: List<Registro>): Registros {
     val clave = claveRegistroPropio(id)
     return todos.filter { it.habito == clave }.associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
 }
+
+/** Emoji por defecto de un hábito que quiero hacer. */
+const val ICONO_HACER = "🌱"
+
+/** Emoji por defecto de un hábito que quiero dejar. */
+const val ICONO_DEJAR = "🚫"
+
+/** Emoji del hábito: el elegido, o el de por defecto según el tipo si está vacío. */
+fun iconoDe(propio: HabitoPropio): String =
+    propio.icono.trim().ifEmpty { if (propio.tipo == TipoPropio.DEJAR) ICONO_DEJAR else ICONO_HACER }
