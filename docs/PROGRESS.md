@@ -74,3 +74,4 @@
 - T40 hecha (emoji por defecto: 🌱 HACER, 🚫 DEJAR; T42 asignará 💪 y 🥗 a Gym y Comida convertidos).
 - T41 hecha y CONFIRMADA por el usuario en el A34 (2026-11-23).
 - T42 implementada (pendiente Action y prueba en el A34: antes de instalar, hacer una copia de seguridad; tu Gym y tu Comida deben aparecer como hábitos propios con todo su historial). Siguiente: T43 (Bienvenida y estado vacío, v1.2.1) en sesión limpia con `/clear`. Nota: hasta T43 una instalación nueva queda sin hábitos.
+- AVISO del usuario (2026-11-23): falta sacar el Agua como pre-seteado (hoy la tarjeta de Agua aparece siempre). Ya está planificado en T44 (`Perfil.aguaActiva`, desactivada en instalaciones nuevas, interruptor en Ajustes); el usuario lo quiere en la próxima tarea: al abrir la sesión de T43, proponerle hacer T43 y T44 juntas (un solo APK) o adelantar T44, y esperar su OK.
