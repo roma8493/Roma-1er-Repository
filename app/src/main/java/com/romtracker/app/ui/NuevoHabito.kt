@@ -31,6 +31,7 @@ import com.romtracker.app.logic.ICONO_HACER
  */
 @Composable
 fun NuevoHabito(
+    otrosHabitos: List<String>,
     alVolver: () -> Unit,
     alCrear: (nombre: String, tipo: String, ancla: String, porQue: String, versionMinima: String, icono: String) -> Unit,
 ) {
@@ -79,6 +80,7 @@ fun NuevoHabito(
             placeholder = { Text("tomar el mate de la tarde") },
             modifier = Modifier.fillMaxWidth(),
         )
+        SelectorAncla(otrosHabitos) { ancla = it }
 
         CampoRom(
             value = porQue,

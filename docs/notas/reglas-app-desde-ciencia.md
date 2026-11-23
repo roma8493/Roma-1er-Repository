@@ -19,6 +19,7 @@
 | R13 | Un fallo aislado no rompe el hábito; lo que daña es fallar dos veces seguidas | "Nunca falles dos veces": tras un día en "no", la tarjeta de Hoy dice "Mañana es lo que importa" (o "Hoy es el día que importa" si ayer fue no). Sin culpa (R8). |
 | R14 | La recompensa inmediata refuerza la repetición | Mensaje breve al marcar ✓; en rachas de 3, 7, 14, 30, 60, 100, 200 y 365 días, uno especial. |
 | R15 | Los cambios de fase (día 90 y 270) son hitos que conviene notar | Aviso suave en Hoy y Detalle durante los 7 días siguientes al cambio de fase (sin guardar nada: se calcula del día del hábito). |
+| R16 | Apilar el hábito nuevo sobre uno ya instalado usa una clave contextual que ya funciona | En Nuevo hábito y Editar, botones "Después de «hábito»" completan la clave ancla con "mi hábito «X»" (el texto sigue editable; solo se guarda texto). |
 
 ## Mapeo a funciones pedidas por el usuario
 - Gym → hábito bueno (R1, R2, R5, R10).

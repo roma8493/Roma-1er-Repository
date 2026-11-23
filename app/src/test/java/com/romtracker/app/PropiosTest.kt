@@ -81,4 +81,16 @@ class PropiosTest {
         assertEquals(EMOJIS_SUGERIDOS.size, EMOJIS_SUGERIDOS.toSet().size)
         assertTrue(EMOJIS_SUGERIDOS.all { primerEmoji(it) == it })
     }
+
+    @Test fun anclaDeHabitoArmaElTextoApilado() {
+        assertEquals("mi hábito «Leer 10 minutos»", anclaDeHabito("  Leer 10 minutos "))
+    }
+
+    @Test fun nombresParaAnclaExcluyeElHabitoEditadoYLosVacios() {
+        val a = HabitoPropio(1, "Leer", "", "", TipoPropio.HACER, 20000)
+        val b = HabitoPropio(2, " Fumar ", "", "", TipoPropio.DEJAR, 20000)
+        val c = HabitoPropio(3, "  ", "", "", TipoPropio.HACER, 20000)
+        assertEquals(listOf("Leer", "Fumar"), nombresParaAncla(listOf(a, b, c)))
+        assertEquals(listOf("Fumar"), nombresParaAncla(listOf(a, b, c), excluirId = 1))
+    }
 }

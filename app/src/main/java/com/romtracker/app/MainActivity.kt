@@ -29,6 +29,7 @@ import com.romtracker.app.ui.CheckAutomatismo
 import com.romtracker.app.ui.Hoy
 import com.romtracker.app.ui.PREFIJO_AUTOMATISMO
 import com.romtracker.app.ui.PantallaRevision
+import com.romtracker.app.logic.nombresParaAncla
 import com.romtracker.app.ui.NuevoHabito
 import com.romtracker.app.ui.PantallaCopia
 import com.romtracker.app.ui.Resumen
@@ -60,9 +61,14 @@ class MainActivity : ComponentActivity() {
                     // Claves de hábitos cuyo check de automatismo se dejó "para después" (separadas por coma).
                     var pospuestos by rememberSaveable { mutableStateOf("") }
 
+                    var otrosHabitos by remember { mutableStateOf<List<String>>(emptyList()) }
                     LaunchedEffect(Unit) {
                         perfil = db.perfilDao().obtener()
                         cargando = false
+                    }
+                    // R16: al abrir Nuevo hábito se ofrecen los hábitos existentes como ancla.
+                    LaunchedEffect(abierto) {
+                        if (abierto == PANTALLA_NUEVO_HABITO) otrosHabitos = nombresParaAncla(db.habitoPropioDao().todos())
                     }
 
                     // safeDrawingPadding: respeta barra de estado, cámara frontal y barra de gestos
@@ -100,6 +106,7 @@ class MainActivity : ComponentActivity() {
                             alVolver = { abierto = null },
                         )
                         abierto == PANTALLA_NUEVO_HABITO -> NuevoHabito(
+                            otrosHabitos = otrosHabitos,
                             alVolver = { abierto = null },
                             alCrear = { nombre, tipo, ancla, porQue, versionMinima, icono ->
                                 scope.launch {

@@ -49,3 +49,10 @@ fun primerEmoji(texto: String): String {
     it.setText(t)
     return t.substring(0, it.next())
 }
+
+/** R16 (apilar hábitos): texto de la clave ancla cuando el hábito se apila sobre otro. Se lee "Después de mi hábito «X»". */
+fun anclaDeHabito(nombre: String): String = "mi hábito «${nombre.trim()}»"
+
+/** Nombres de los hábitos propios que se ofrecen como ancla (sin el hábito [excluirId], si se está editando uno). */
+fun nombresParaAncla(propios: List<HabitoPropio>, excluirId: Long? = null): List<String> =
+    propios.filter { it.id != excluirId && it.nombre.isNotBlank() }.map { it.nombre.trim() }

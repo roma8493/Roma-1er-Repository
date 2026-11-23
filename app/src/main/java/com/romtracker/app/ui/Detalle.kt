@@ -65,6 +65,7 @@ import com.romtracker.app.logic.estadoDeFase
 import com.romtracker.app.logic.cruzoFase
 import com.romtracker.app.logic.falloAyer
 import com.romtracker.app.logic.iconoDe
+import com.romtracker.app.logic.nombresParaAncla
 import com.romtracker.app.logic.rachaActual
 import com.romtracker.app.logic.textoAvisoFase
 import com.romtracker.app.logic.textoNuncaDosVeces
@@ -104,6 +105,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var desencadenantes by remember { mutableStateOf<List<Desencadenante>>(emptyList()) }
     // Día de desliz recién marcado en un hábito DEJAR: abre el diálogo opcional de desencadenante (R3).
     var deslizFecha by remember { mutableStateOf<LocalDate?>(null) }
+    var otrosHabitos by remember { mutableStateOf<List<String>>(emptyList()) }
 
     suspend fun cargar() {
         checks = db.automatismoDao().todos()
@@ -114,6 +116,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
             val id = tipo.removePrefix(PREFIJO_PROPIO).toLongOrNull()
             val p = db.habitoPropioDao().todos().firstOrNull { it.id == id } ?: return
             propio = p
+            otrosHabitos = nombresParaAncla(db.habitoPropioDao().todos(), excluirId = p.id)
             inicio = LocalDate.ofEpochDay(p.fechaInicio)
             registros = db.registroDao().todos(tipo)
                 .associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
@@ -330,6 +333,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
             if (editando) {
                 DialogoEditarPropio(
                     p,
+                    otrosHabitos = otrosHabitos,
                     alCancelar = { editando = false },
                     alGuardar = { nombre, ancla, porQue, versionMinima, icono ->
                         scope.launch {
@@ -433,6 +437,7 @@ internal fun CeldaDia(
 @Composable
 private fun DialogoEditarPropio(
     p: HabitoPropio,
+    otrosHabitos: List<String>,
     alCancelar: () -> Unit,
     alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String, icono: String) -> Unit,
 ) {
@@ -452,6 +457,7 @@ private fun DialogoEditarPropio(
             ) {
                 CampoRom(nombre, { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 CampoRom(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
+                SelectorAncla(otrosHabitos) { ancla = it }
                 CampoRom(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
                 CampoRom(versionMinima, { versionMinima = it }, label = { Text("Versión mínima (opcional)") }, modifier = Modifier.fillMaxWidth())
                 SelectorEmoji(icono, iconoDe(p.copy(icono = ""))) { icono = it }
