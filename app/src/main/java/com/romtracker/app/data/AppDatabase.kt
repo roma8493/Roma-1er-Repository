@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.romtracker.app.logic.FijosViejos
 import com.romtracker.app.logic.ITEMS_POR_DEFECTO
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
 import com.romtracker.app.logic.limpiarTextoItem
@@ -16,7 +17,7 @@ import com.romtracker.app.logic.puedeBorrarItem
 @Database(
     entities = [Perfil::class, Habito::class, Registro::class, Checklist::class, Agua::class, Animo::class, HabitoPropio::class,
         ChecklistItem::class, ChecklistMarca::class, Automatismo::class, Revision::class, Antojo::class, Desencadenante::class],
-    version = 13,
+    version = 14,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -267,6 +268,60 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /**
+     * 1.2.0: Gym y Comida pasan a ser hábitos propios HACER (con sus registros y checks). Gym toma ancla, "por qué"
+     * y versión mínima del perfil; los campos del perfil quedan sin uso. Misma regla que `convertirFijos` (copia).
+     */
+    val MIGRACION_13_14 = object : Migration(13, 14) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            var ancla = ""
+            var porQue = ""
+            var versionMinima = ""
+            db.query("SELECT `claveAncla`, `porQue`, `versionMinima` FROM `perfil` LIMIT 1").use {
+                if (it.moveToFirst()) {
+                    ancla = it.getString(0)
+                    porQue = it.getString(1)
+                    versionMinima = it.getString(2)
+                }
+            }
+            for (fijo in FijosViejos.TODOS) {
+                var inicio: Long? = null
+                db.query("SELECT `fechaInicio` FROM `habito` WHERE `tipo` = ?", arrayOf<Any>(fijo.clave)).use {
+                    if (it.moveToFirst()) inicio = it.getLong(0)
+                }
+                var primerDia: Long? = null
+                for (tabla in listOf("registro", "automatismo")) {
+                    db.query("SELECT MIN(`fecha`) FROM `$tabla` WHERE `habito` = ?", arrayOf<Any>(fijo.clave)).use {
+                        if (it.moveToFirst() && !it.isNull(0)) {
+                            val f = it.getLong(0)
+                            primerDia = minOf(primerDia ?: f, f)
+                        }
+                    }
+                }
+                val desde = inicio ?: primerDia ?: continue
+                val esGym = fijo.clave == FijosViejos.GYM
+                db.execSQL(
+                    "INSERT INTO `habito_propio` (`nombre`, `claveAncla`, `porQue`, `tipo`, `fechaInicio`, `versionMinima`, `icono`) " +
+                        "VALUES (?, ?, ?, 'HACER', ?, ?, ?)",
+                    arrayOf<Any>(
+                        fijo.nombre,
+                        if (esGym) ancla else FijosViejos.ANCLA_COMIDA,
+                        if (esGym) porQue else FijosViejos.PORQUE_COMIDA,
+                        desde,
+                        if (esGym) versionMinima else "",
+                        fijo.icono,
+                    ),
+                )
+                var id = 0L
+                db.query("SELECT last_insert_rowid()").use { if (it.moveToFirst()) id = it.getLong(0) }
+                val nueva = "PROPIO_$id"
+                db.execSQL("UPDATE `registro` SET `habito` = ? WHERE `habito` = ?", arrayOf<Any>(nueva, fijo.clave))
+                db.execSQL("UPDATE `automatismo` SET `habito` = ? WHERE `habito` = ?", arrayOf<Any>(nueva, fijo.clave))
+            }
+            db.execSQL("DELETE FROM `habito` WHERE `tipo` IN ('GYM', 'COMIDA')")
+        }
+    }
+
     val MIGRACION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -293,7 +348,7 @@ abstract class AppDatabase : RoomDatabase() {
             instancia ?: synchronized(this) {
                 instancia ?: Room.databaseBuilder(
                     contexto.applicationContext, AppDatabase::class.java, "romtracker.db"
-                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13).build().also { instancia = it }
+                ).addMigrations(MIGRACION_1_2, MIGRACION_2_3, MIGRACION_3_4, MIGRACION_4_5, MIGRACION_5_6, MIGRACION_6_7, MIGRACION_7_8, MIGRACION_8_9, MIGRACION_9_10, MIGRACION_10_11, MIGRACION_11_12, MIGRACION_12_13, MIGRACION_13_14).build().also { instancia = it }
             }
     }
 }

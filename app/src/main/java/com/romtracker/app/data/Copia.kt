@@ -1,7 +1,10 @@
 package com.romtracker.app.data
 
+import com.romtracker.app.logic.DatosConvertibles
+import com.romtracker.app.logic.FijosViejos
 import com.romtracker.app.logic.MAX_ITEMS_CHECKLIST
 import com.romtracker.app.logic.OpcionesDesencadenante
+import com.romtracker.app.logic.convertirFijos
 import com.romtracker.app.logic.itemsPorDefecto
 import com.romtracker.app.logic.lunesDe
 import com.romtracker.app.logic.marcasDeChecklistVieja
@@ -29,8 +32,8 @@ data class Copia(
 class CopiaInvalida(message: String) : Exception(message)
 
 object CopiaJson {
-    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". 13 = agrega "icono" en cada hábito propio. Las versiones anteriores se siguen leyendo. */
-    const val VERSION = 13
+    /** 1 = 0.2 (sin agua). 2 = agrega "aguas". 3 = agrega la meta de agua en el perfil. 4 = agrega "animos". 5 = agrega "habitosPropios". 6 = agrega "checklistItems" y "checklistMarcas". 7 = agrega "tema" en el perfil. 8 = agrega "versionMinima" en el perfil y en cada hábito propio. 9 = agrega "automatismos". 10 = agrega "revisiones". 11 = agrega "antojos". 12 = agrega "desencadenantes". 13 = agrega "icono" en cada hábito propio. 14 = Gym y Comida son hábitos propios (las copias 1–13 con GYM/COMIDA se convierten al leer). Las versiones anteriores se siguen leyendo. */
+    const val VERSION = 14
     private const val APP = "RomTracker"
 
     fun aTexto(c: Copia): String {
@@ -122,6 +125,9 @@ object CopiaJson {
             if (version > VERSION) {
                 throw CopiaInvalida("Esta copia es de una versión más nueva de la app. Actualizá RomTracker e intentá de nuevo.")
             }
+            // Las copias anteriores a la versión 14 pueden traer Gym y Comida como hábitos fijos: se convierten al final.
+            val viejo = version < 14
+            val fijosViejos = FijosViejos.TODOS.map { it.clave }.toSet()
             val p = raiz.getJSONObject("perfil")
             val perfil = Perfil(
                 nombre = p.getString("nombre"),
@@ -137,7 +143,7 @@ object CopiaJson {
             )
             val habitos = raiz.getJSONArray("habitos").objetos().map {
                 val tipo = it.getString("tipo")
-                if (tipo != TipoHabito.GYM && tipo != TipoHabito.COMIDA && tipo != TipoHabito.AGUA) {
+                if (tipo != TipoHabito.AGUA && !(viejo && tipo in fijosViejos)) {
                     throw CopiaInvalida("La copia tiene un hábito desconocido.")
                 }
                 Habito(tipo, it.getLong("fechaInicio"))
@@ -156,7 +162,7 @@ object CopiaJson {
             val clavesPropias = propios.map { claveRegistroPropio(it.id) }.toSet()
             val registros = raiz.getJSONArray("registros").objetos().map {
                 val h = it.getString("habito")
-                if (h != TipoHabito.GYM && h != TipoHabito.COMIDA && h !in clavesPropias) {
+                if (h !in clavesPropias && !(viejo && h in fijosViejos)) {
                     throw CopiaInvalida("La copia tiene un registro desconocido.")
                 }
                 Registro(h, it.getLong("fecha"), it.getBoolean("cumplido"))
@@ -190,7 +196,7 @@ object CopiaJson {
             // Las copias anteriores a la versión 9 no traen "automatismos": se leen como lista vacía.
             val automatismos = raiz.optJSONArray("automatismos")?.objetos()?.map {
                 val h = it.getString("habito")
-                if (h != TipoHabito.GYM && h != TipoHabito.COMIDA && h != TipoHabito.AGUA && h !in clavesPropias) {
+                if (h != TipoHabito.AGUA && h !in clavesPropias && !(viejo && h in fijosViejos)) {
                     throw CopiaInvalida("La copia tiene un check de automatismo de un hábito desconocido.")
                 }
                 val r = listOf(it.getInt("r1"), it.getInt("r2"), it.getInt("r3"), it.getInt("r4"))
@@ -228,7 +234,13 @@ object CopiaJson {
                     opcion(it, "compania", OpcionesDesencadenante.COMPANIA),
                 )
             } ?: emptyList()
-            return Copia(perfil, habitos, registros, checklists, aguas, animos, propios, items, marcas, automatismos, revisiones, antojos, desencadenantes)
+            val conv = if (viejo) {
+                convertirFijos(
+                    DatosConvertibles(habitos, propios, registros, automatismos),
+                    perfil.claveAncla, perfil.porQue, perfil.versionMinima,
+                )
+            } else DatosConvertibles(habitos, propios, registros, automatismos)
+            return Copia(perfil, conv.habitos, conv.registros, checklists, aguas, animos, conv.propios, items, marcas, conv.automatismos, revisiones, antojos, desencadenantes)
         } catch (e: CopiaInvalida) {
             throw e
         } catch (e: Exception) {

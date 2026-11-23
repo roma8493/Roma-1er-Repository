@@ -73,14 +73,13 @@ import java.util.Locale
 
 private val LOCALE_ES = Locale("es", "AR")
 
-/** Pantalla P3: detalle de un hábito (GYM, COMIDA, AGUA o propio "PROPIO_<id>") con calendario mensual. */
+/** Pantalla P3: detalle de un hábito (AGUA o propio "PROPIO_<id>") con calendario mensual. */
 @Composable
 fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit) {
     BackHandler(onBack = alVolver)
 
     val hoy = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
-    val esGym = tipo == TipoHabito.GYM
     val esAgua = tipo == TipoHabito.AGUA
     val esPropio = tipo.startsWith(PREFIJO_PROPIO)
     var propio by remember { mutableStateOf<HabitoPropio?>(null) }
@@ -89,9 +88,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     val dejar = propio?.tipo == TipoPropio.DEJAR
     val titulo = when {
         esPropio -> propio?.let { "${iconoDe(it)} ${it.nombre}" } ?: "HÁBITO"
-        tipo == TipoHabito.GYM -> "GYM"
-        tipo == TipoHabito.AGUA -> "AGUA"
-        else -> "COMIDA"
+        else -> "AGUA"
     }
 
     var inicio by remember { mutableStateOf<LocalDate?>(null) }
@@ -265,16 +262,8 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                                             "Sin dato" to { borrarAgua(fecha) },
                                         ) else listOf(
                                             // Propio: la 1.ª opción es siempre el ✓ (en DEJAR = "No lo hice").
-                                            when {
-                                                esPropio -> if (dejar) "No lo hice" else "Lo hice"
-                                                esGym -> "Fui"
-                                                else -> "Sano"
-                                            } to { marcar(fecha, true) },
-                                            when {
-                                                esPropio -> if (dejar) "Lo hice" else "No lo hice"
-                                                esGym -> "No fui"
-                                                else -> "Chatarra"
-                                            } to { marcar(fecha, false) },
+                                            (if (dejar) "No lo hice" else "Lo hice") to { marcar(fecha, true) },
+                                            (if (dejar) "Lo hice" else "No lo hice") to { marcar(fecha, false) },
                                             "Sin dato" to { marcar(fecha, null) },
                                         ),
                                     )
@@ -287,8 +276,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     esPropio && dejar -> "✓ no lo hice · ✗ lo hice · · sin dato. "
                     esPropio -> "✓ lo hice · ✗ no lo hice · · sin dato. "
                     esAgua -> "Cada día muestra vasos/meta. Fondo marcado = llegaste a la meta · · sin dato. "
-                    esGym -> "✓ fui · ✗ no fui · · sin dato. "
-                    else -> "✓ sano · ✗ chatarra · · sin dato. "
+                    else -> "✓ sí · ✗ no · · sin dato. "
                 }
                 Text(
                     leyenda + "Podés completar hoy y los 7 días anteriores.",
@@ -363,16 +351,6 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                     },
                     dismissButton = { TextButton(onClick = { borrando = false }) { Text("Cancelar") } },
                 )
-            }
-        }
-
-        if (esGym) {
-            TarjetaRom(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Después de ${perfil.claveAncla}, voy al gym.", style = MaterialTheme.typography.titleMedium)
-                    Text("¿Por qué? ${perfil.porQue}", color = Paleta.TextoSecundario)
-                    if (perfil.versionMinima.isNotBlank()) Text("Versión mínima: ${perfil.versionMinima}", color = Paleta.TextoSecundario)
-                }
             }
         }
 

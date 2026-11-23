@@ -34,7 +34,9 @@ import com.romtracker.app.logic.cruceAnimo
 import com.romtracker.app.logic.diasFaltanParaCruce
 import com.romtracker.app.logic.registrosDeAgua
 import com.romtracker.app.logic.textoCruce
-import com.romtracker.app.data.TipoHabito
+import com.romtracker.app.data.TipoPropio
+import com.romtracker.app.data.claveRegistroPropio
+import com.romtracker.app.logic.iconoDe
 import com.romtracker.app.logic.caritaDe
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -59,11 +61,11 @@ fun DetalleAnimo(db: AppDatabase, alVolver: () -> Unit) {
         animos = db.animoDao().todos().associate { LocalDate.ofEpochDay(it.fecha) to it.valor }
         fun deHabito(lista: List<com.romtracker.app.data.Registro>): Registros =
             lista.associate { LocalDate.ofEpochDay(it.fecha) to it.cumplido }
-        registros = listOf(
-            "Gym" to deHabito(db.registroDao().todos(TipoHabito.GYM)),
-            "Comida" to deHabito(db.registroDao().todos(TipoHabito.COMIDA)),
-            "Agua" to registrosDeAgua(db.aguaDao().todas()),
-        )
+        // Hábitos propios HACER (en DEJAR el ✓ significa otra cosa) y Agua.
+        val propios = db.habitoPropioDao().todos().filter { it.tipo == TipoPropio.HACER }.map {
+            "${iconoDe(it)} ${it.nombre}" to deHabito(db.registroDao().todos(claveRegistroPropio(it.id)))
+        }
+        registros = propios + ("Agua" to registrosDeAgua(db.aguaDao().todas()))
     }
 
     LaunchedEffect(Unit) { cargar() }

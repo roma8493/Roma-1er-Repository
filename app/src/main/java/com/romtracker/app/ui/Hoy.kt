@@ -66,7 +66,7 @@ private data class TarjetaEstado(val dia: Int, val hoy: Boolean?)
 private data class AguaEstado(val dia: Int?, val vasos: Int, val meta: Int)
 
 /**
- * Pantalla P2 (Hoy): tarjetas Gym y Comida con registro en 1 toque (tocar el otro botón corrige),
+ * Pantalla P2 (Hoy): tarjetas de los hábitos propios con registro en 1 toque (tocar el otro botón corrige),
  * la tarjeta Agua (+1 / −1 vaso) y la checklist de la noche ("para mañana") + lo que se preparó anoche.
  */
 @Composable
@@ -86,8 +86,6 @@ fun Hoy(
     val fecha = remember { LocalDate.now() }
     val scope = rememberCoroutineScope()
 
-    var gym by remember { mutableStateOf<TarjetaEstado?>(null) }
-    var comida by remember { mutableStateOf<TarjetaEstado?>(null) }
     var agua by remember { mutableStateOf<AguaEstado?>(null) }
     var animo by remember { mutableStateOf<Int?>(null) }
     // Hábitos propios con su estado de hoy (TarjetaEstado.hoy = ✓ ya resuelto según el tipo).
@@ -105,13 +103,6 @@ fun Hoy(
     // ¿Toca la revisión semanal (R9)?
     var tocaRev by remember { mutableStateOf(false) }
     var tocaCheck by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
-
-    suspend fun cargarHabito(tipo: String): TarjetaEstado? {
-        val habito = db.habitoDao().obtener(tipo) ?: return null
-        val registroHoy = db.registroDao().todos(tipo)
-            .firstOrNull { it.fecha == fecha.toEpochDay() }?.cumplido
-        return TarjetaEstado(diaDelHabito(LocalDate.ofEpochDay(habito.fechaInicio), fecha), registroHoy)
-    }
 
     suspend fun cargarAgua(): AguaEstado {
         val habito = db.habitoDao().obtener(TipoHabito.AGUA)
@@ -153,18 +144,14 @@ fun Hoy(
     LaunchedEffect(Unit) {
         antojos = db.antojoDao().todos()
         propios = cargarPropios()
-        gym = cargarHabito(TipoHabito.GYM)
         agua = cargarAgua()
-        comida = cargarHabito(TipoHabito.COMIDA)
         animo = db.animoDao().todos().firstOrNull { it.fecha == fecha.toEpochDay() }?.valor
         itemsChecklist = db.checklistItemDao().todos()
         anoche = db.checklistMarcaDao().deDia(fecha.toEpochDay())
         paraManana = db.checklistMarcaDao().deDia(fecha.plusDays(1).toEpochDay())
 
-        // Check de automatismo: solo hábitos HACER (Gym, Comida, Agua y propios HACER); no Ánimo ni DEJAR.
+        // Check de automatismo: solo hábitos HACER (Agua y propios HACER); no Ánimo ni DEJAR.
         val hacer = listOfNotNull(
-            db.habitoDao().obtener(TipoHabito.GYM)?.let { Triple(TipoHabito.GYM, "Gym", it.fechaInicio) },
-            db.habitoDao().obtener(TipoHabito.COMIDA)?.let { Triple(TipoHabito.COMIDA, "Comida", it.fechaInicio) },
             db.habitoDao().obtener(TipoHabito.AGUA)?.let { Triple(TipoHabito.AGUA, "Agua", it.fechaInicio) },
         ) + propios.filter { (p, _) -> p.tipo == TipoPropio.HACER }
             .map { (p, _) -> Triple(claveRegistroPropio(p.id), p.nombre, p.fechaInicio) }
@@ -178,18 +165,6 @@ fun Hoy(
         val primero = inicios.minOrNull()
         tocaRev = primero != null &&
             tocaRevision(primero, db.revisionDao().todas().maxOfOrNull { it.semana }, fecha.toEpochDay())
-    }
-
-    fun registrar(tipo: String, cumplido: Boolean) {
-        scope.launch {
-            // La comida empieza con el primer registro (SPEC); no pisa el inicio existente.
-            if (tipo == TipoHabito.COMIDA) {
-                db.habitoDao().crear(com.romtracker.app.data.Habito(tipo, fecha.toEpochDay()))
-            }
-            db.registroDao().guardar(Registro(tipo, fecha.toEpochDay(), cumplido))
-            val nuevo = cargarHabito(tipo)
-            if (tipo == TipoHabito.GYM) gym = nuevo else comida = nuevo
-        }
     }
 
     fun cambiarVasos(delta: Int) {
@@ -260,31 +235,6 @@ fun Hoy(
                 alPosponer = { alPosponerCheck(CLAVE_REVISION) },
             )
         }
-
-        TarjetaHabito(
-            titulo = "GYM",
-            estado = gym,
-            pregunta = "¿Vamos hoy?",
-            textoSi = "Fui ✓",
-            textoNo = "Hoy no",
-            mensajeNo = "Mañana es otra oportunidad.",
-            mensajeSi = "¡Qué bueno que fuiste!",
-            alAbrir = { alAbrir(TipoHabito.GYM) },
-            alElegir = { registrar(TipoHabito.GYM, it) },
-            versionMinima = perfil.versionMinima,
-        )
-
-        TarjetaHabito(
-            titulo = "COMIDA",
-            estado = comida,
-            pregunta = "¿Cómo viene el día?",
-            textoSi = "Sano",
-            textoNo = "Chatarra",
-            mensajeNo = "Un desliz no borra lo que venís haciendo.",
-            mensajeSi = "Bien ahí, sigamos así.",
-            alAbrir = { alAbrir(TipoHabito.COMIDA) },
-            alElegir = { registrar(TipoHabito.COMIDA, it) },
-        )
 
         TarjetaAgua(
             estado = agua,
@@ -387,7 +337,7 @@ private fun TarjetaHabito(
     TarjetaRom(alTocar = alAbrir, habilitada = estado != null, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (estado == null) {
-                // Solo la comida puede no existir todavía: empieza con el primer registro.
+                // Sin datos todavía.
                 Text(titulo, style = MaterialTheme.typography.titleMedium, color = Paleta.Titulo)
             } else {
                 val e = estadoDeFase(estado.dia)

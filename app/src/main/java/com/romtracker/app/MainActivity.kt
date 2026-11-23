@@ -72,10 +72,6 @@ class MainActivity : ComponentActivity() {
                         perfil == null -> Bienvenida { nuevo ->
                             scope.launch {
                                 db.perfilDao().guardar(nuevo)
-                                // El gym empieza el día de la configuración (SPEC)
-                                db.habitoDao().crear(
-                                    Habito(TipoHabito.GYM, LocalDate.now().toEpochDay())
-                                )
                                 perfil = nuevo
                             }
                         }

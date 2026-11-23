@@ -53,10 +53,8 @@ private val PREGUNTAS = listOf(
     "Me sale casi sin esfuerzo.",
 )
 
-/** Nombre que se muestra del hábito [clave] (GYM, COMIDA, AGUA o PROPIO_<id>). */
+/** Nombre que se muestra del hábito [clave] (AGUA o PROPIO_<id>). */
 suspend fun nombreDeHabito(db: AppDatabase, clave: String): String = when {
-    clave == TipoHabito.GYM -> "Gym"
-    clave == TipoHabito.COMIDA -> "Comida"
     clave == TipoHabito.AGUA -> "Agua"
     clave.startsWith(PREFIJO_PROPIO) -> {
         val id = clave.removePrefix(PREFIJO_PROPIO).toLongOrNull()

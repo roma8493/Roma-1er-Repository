@@ -16,7 +16,7 @@ data class Perfil(
     @ColumnInfo(defaultValue = "8") val metaAgua: Int = 8,
     /** Tema de la app: [TemaPerfil.CLARO] (0, por defecto) u [TemaPerfil.OSCURO] (2). */
     @ColumnInfo(defaultValue = "0") val tema: Int = TemaPerfil.CLARO,
-    /** Versión mínima del Gym (R10), p. ej. "solo 20 min". Vacío = sin versión mínima. */
+    /** Sin uso desde 1.2.0 (era la versión mínima del Gym; ahora vive en cada hábito propio). */
     @ColumnInfo(defaultValue = "''") val versionMinima: String = "",
 )
 
@@ -36,7 +36,7 @@ object TemaPerfil {
     fun deNombre(nombre: String?): Int = if (nombre == "OSCURO") OSCURO else CLARO
 }
 
-/** [tipo]: "GYM" o "COMIDA". */
+/** [tipo]: solo "AGUA" desde 1.2.0 (Gym y Comida pasaron a ser hábitos propios). */
 @Entity(tableName = "habito")
 data class Habito(
     @PrimaryKey val tipo: String,
@@ -115,7 +115,7 @@ data class HabitoPropio(
 
 /**
  * Check de automatismo (R6) de un hábito HACER: 4 respuestas de 1 ("nada automático") a 5 ("totalmente automático").
- * [habito] usa la misma clave que `registro.habito` (GYM, COMIDA, AGUA o PROPIO_<id>). Un check por hábito y día.
+ * [habito] usa la misma clave que `registro.habito` (AGUA o PROPIO_<id>). Un check por hábito y día.
  */
 @Entity(tableName = "automatismo", primaryKeys = ["habito", "fecha"])
 data class Automatismo(
@@ -176,7 +176,5 @@ const val PREFIJO_PROPIO = "PROPIO_"
 fun claveRegistroPropio(id: Long) = "$PREFIJO_PROPIO$id"
 
 object TipoHabito {
-    const val GYM = "GYM"
-    const val COMIDA = "COMIDA"
     const val AGUA = "AGUA"
 }

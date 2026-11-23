@@ -88,8 +88,6 @@ fun Resumen(
         ) { dia -> celdaSiNo(registros[clave]?.get(dia)) }
 
         val lista = mutableListOf<Fila>()
-        lista += filaDe("Gym", TipoHabito.GYM, habitos.containsKey(TipoHabito.GYM))
-        lista += filaDe("Comida", TipoHabito.COMIDA, habitos.containsKey(TipoHabito.COMIDA))
         lista += Fila("Agua", if (habitos.containsKey(TipoHabito.AGUA)) TipoHabito.AGUA else null) { dia ->
             val a = aguas[dia]
             when {

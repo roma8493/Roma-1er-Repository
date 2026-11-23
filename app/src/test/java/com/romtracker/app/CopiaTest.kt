@@ -9,12 +9,8 @@ import org.junit.Test
 class CopiaTest {
     private val copia = Copia(
         perfil = Perfil(nombre = "Ana \"Test\" ñ", horaSalidaMinutos = 1020, claveAncla = "salir del trabajo", porQue = "Tener energía\ny dormir mejor"),
-        habitos = listOf(Habito(TipoHabito.GYM, 20000), Habito(TipoHabito.COMIDA, 20003)),
-        registros = listOf(
-            Registro(TipoHabito.GYM, 20000, true),
-            Registro(TipoHabito.GYM, 20001, false),
-            Registro(TipoHabito.COMIDA, 20003, true),
-        ),
+        habitos = listOf(Habito(TipoHabito.AGUA, 20003)),
+        registros = emptyList(),
         checklists = listOf(Checklist(20002, bolso = true, comida = false, hora = true)),
     )
 
@@ -51,7 +47,6 @@ class CopiaTest {
 
     @Test fun idaYVueltaConservaAgua() {
         val conAgua = copia.copy(
-            habitos = copia.habitos + Habito(TipoHabito.AGUA, 20005),
             aguas = listOf(Agua(20005, 8, 8), Agua(20006, 3, 6)),
         )
         assertEquals(conAgua, CopiaJson.deTexto(CopiaJson.aTexto(conAgua)))
@@ -152,8 +147,49 @@ class CopiaTest {
     }
 
     @Test fun habitoDesconocidoSeRechaza() {
-        val texto = CopiaJson.aTexto(copia).replace("\"COMIDA\"", "\"OTRO\"")
-        invalida(texto)
+        invalida(CopiaJson.aTexto(copia.copy(habitos = listOf(Habito("OTRO", 20003)))))
+    }
+
+    @Test fun copia14conGymComoHabitoFijoSeRechaza() {
+        invalida(CopiaJson.aTexto(copia.copy(habitos = listOf(Habito("GYM", 20000)))))
+    }
+
+    private val vieja13 = Copia(
+        perfil = Perfil(nombre = "Ana", horaSalidaMinutos = 1020, claveAncla = "salir del trabajo", porQue = "Tener energía", versionMinima = "solo 20 min"),
+        habitos = listOf(Habito("GYM", 20000), Habito("COMIDA", 20003), Habito(TipoHabito.AGUA, 20005)),
+        registros = listOf(Registro("GYM", 20000, true), Registro("GYM", 20001, false), Registro("COMIDA", 20003, true)),
+        checklists = emptyList(),
+        habitosPropios = listOf(HabitoPropio(1, "Leer", "después de cenar", "Aprender", TipoPropio.HACER, 20002)),
+        automatismos = listOf(Automatismo("GYM", 20028, 3, 4, 2, 5)),
+    )
+
+    private fun comoVersion13(c: Copia) =
+        CopiaJson.deTexto(org.json.JSONObject(CopiaJson.aTexto(c)).apply { put("version", 13) }.toString())
+
+    @Test fun copia13ConGymYComidaSeConvierteEnPropios() {
+        val leida = comoVersion13(vieja13)
+        assertEquals(listOf(TipoHabito.AGUA), leida.habitos.map { it.tipo })
+        val gym = leida.habitosPropios.single { it.nombre == "Gym" }
+        val comida = leida.habitosPropios.single { it.nombre == "Comida" }
+        assertEquals(2L, gym.id)
+        assertEquals(3L, comida.id)
+        assertEquals("salir del trabajo", gym.claveAncla)
+        assertEquals("solo 20 min", gym.versionMinima)
+        assertEquals("💪", gym.icono)
+        assertEquals("🥗", comida.icono)
+        assertEquals(20000L, gym.fechaInicio)
+        assertEquals(20003L, comida.fechaInicio)
+        assertEquals(TipoPropio.HACER, gym.tipo)
+        assertEquals(
+            listOf(Registro("PROPIO_2", 20000, true), Registro("PROPIO_2", 20001, false), Registro("PROPIO_3", 20003, true)),
+            leida.registros,
+        )
+        assertEquals(listOf(Automatismo("PROPIO_2", 20028, 3, 4, 2, 5)), leida.automatismos)
+    }
+
+    @Test fun copia13ConvertidaYaEsUnaCopia14Valida() {
+        val leida = comoVersion13(vieja13)
+        assertEquals(leida, CopiaJson.deTexto(CopiaJson.aTexto(leida)))
     }
 
     @Test fun idaYVueltaConservaAnimo() {
@@ -235,7 +271,7 @@ class CopiaTest {
         val propio = HabitoPropio(3, "Leer", "después de cenar", "Aprender", TipoPropio.HACER, 20000)
         val conChecks = copia.copy(
             habitosPropios = listOf(propio),
-            automatismos = listOf(Automatismo(TipoHabito.GYM, 20028, 3, 4, 2, 5), Automatismo(claveRegistroPropio(3), 20030, 1, 1, 2, 2)),
+            automatismos = listOf(Automatismo(TipoHabito.AGUA, 20028, 3, 4, 2, 5), Automatismo(claveRegistroPropio(3), 20030, 1, 1, 2, 2)),
         )
         assertEquals(conChecks, CopiaJson.deTexto(CopiaJson.aTexto(conChecks)))
     }
@@ -246,7 +282,7 @@ class CopiaTest {
     }
 
     @Test fun automatismoFueraDeRangoSeRechaza() {
-        val mala = copia.copy(automatismos = listOf(Automatismo(TipoHabito.GYM, 20028, 3, 6, 2, 5)))
+        val mala = copia.copy(automatismos = listOf(Automatismo(TipoHabito.AGUA, 20028, 3, 6, 2, 5)))
         assertTrue(invalida(CopiaJson.aTexto(mala)).isNotBlank())
     }
 
