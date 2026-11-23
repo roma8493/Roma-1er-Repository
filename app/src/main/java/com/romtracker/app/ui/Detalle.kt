@@ -62,6 +62,7 @@ import com.romtracker.app.logic.consistencia
 import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.esEditable
 import com.romtracker.app.logic.estadoDeFase
+import com.romtracker.app.logic.iconoDe
 import com.romtracker.app.logic.rachaActual
 import com.romtracker.app.logic.registrosDeAgua
 import kotlinx.coroutines.launch
@@ -87,7 +88,7 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
     var borrando by rememberSaveable { mutableStateOf(false) }
     val dejar = propio?.tipo == TipoPropio.DEJAR
     val titulo = when {
-        esPropio -> propio?.nombre ?: "HÁBITO"
+        esPropio -> propio?.let { "${iconoDe(it)} ${it.nombre}" } ?: "HÁBITO"
         tipo == TipoHabito.GYM -> "GYM"
         tipo == TipoHabito.AGUA -> "AGUA"
         else -> "COMIDA"
@@ -328,9 +329,9 @@ fun Detalle(db: AppDatabase, perfil: Perfil, tipo: String, alVolver: () -> Unit)
                 DialogoEditarPropio(
                     p,
                     alCancelar = { editando = false },
-                    alGuardar = { nombre, ancla, porQue, versionMinima ->
+                    alGuardar = { nombre, ancla, porQue, versionMinima, icono ->
                         scope.launch {
-                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue, versionMinima = versionMinima))
+                            db.habitoPropioDao().actualizar(p.copy(nombre = nombre, claveAncla = ancla, porQue = porQue, versionMinima = versionMinima, icono = icono))
                             editando = false
                             cargar()
                         }
@@ -441,8 +442,9 @@ internal fun CeldaDia(
 private fun DialogoEditarPropio(
     p: HabitoPropio,
     alCancelar: () -> Unit,
-    alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String) -> Unit,
+    alGuardar: (nombre: String, ancla: String, porQue: String, versionMinima: String, icono: String) -> Unit,
 ) {
+    var icono by rememberSaveable { mutableStateOf(p.icono.trim()) }
     var nombre by rememberSaveable { mutableStateOf(p.nombre) }
     var ancla by rememberSaveable { mutableStateOf(p.claveAncla) }
     var porQue by rememberSaveable { mutableStateOf(p.porQue) }
@@ -460,10 +462,11 @@ private fun DialogoEditarPropio(
                 CampoRom(ancla, { ancla = it }, label = { Text("Clave ancla: Después de…") }, modifier = Modifier.fillMaxWidth())
                 CampoRom(porQue, { porQue = it }, label = { Text("¿Por qué es importante?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
                 CampoRom(versionMinima, { versionMinima = it }, label = { Text("Versión mínima (opcional)") }, modifier = Modifier.fillMaxWidth())
+                SelectorEmoji(icono, iconoDe(p.copy(icono = ""))) { icono = it }
             }
         },
         confirmButton = {
-            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim(), versionMinima.trim()) }) { Text("Guardar") }
+            TextButton(enabled = valido, onClick = { alGuardar(nombre.trim(), ancla.trim(), porQue.trim(), versionMinima.trim(), icono) }) { Text("Guardar") }
         },
         dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } },
     )

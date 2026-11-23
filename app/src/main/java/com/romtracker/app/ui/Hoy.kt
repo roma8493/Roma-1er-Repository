@@ -50,6 +50,7 @@ import com.romtracker.app.logic.diaDelHabito
 import com.romtracker.app.logic.estaHecho
 import com.romtracker.app.logic.estadoDeFase
 import com.romtracker.app.logic.habitosQueTocan
+import com.romtracker.app.logic.iconoDe
 import com.romtracker.app.logic.tocaRevision
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -310,7 +311,7 @@ fun Hoy(
         propios.forEach { (p, estado) ->
             val dejar = p.tipo == TipoPropio.DEJAR
             TarjetaHabito(
-                titulo = p.nombre,
+                titulo = "${iconoDe(p)} ${p.nombre}",
                 estado = estado,
                 pregunta = if (dejar) "¿Cómo va el día?" else "¿Lo hiciste hoy?",
                 // El 1.er botón siempre es el ✓: en DEJAR significa "no lo hice".

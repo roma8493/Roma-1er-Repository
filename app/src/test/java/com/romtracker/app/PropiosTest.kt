@@ -68,4 +68,17 @@ class PropiosTest {
         val dejar = HabitoPropio(2, "Fumar", "", "", TipoPropio.DEJAR, 20000, icono = "🚭")
         assertEquals("🚭", iconoDe(dejar))
     }
+
+    @Test
+    fun primerEmojiDejaSoloElPrimerSimbolo() {
+        assertEquals("", primerEmoji("   "))
+        assertEquals("💪", primerEmoji(" 💪abc"))
+        assertEquals("a", primerEmoji("abc"))
+    }
+
+    @Test
+    fun losSugeridosNoSeRepitenYNoEstanVacios() {
+        assertEquals(EMOJIS_SUGERIDOS.size, EMOJIS_SUGERIDOS.toSet().size)
+        assertTrue(EMOJIS_SUGERIDOS.all { primerEmoji(it) == it })
+    }
 }

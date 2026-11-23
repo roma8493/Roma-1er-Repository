@@ -35,6 +35,7 @@ import com.romtracker.app.data.TipoPropio
 import com.romtracker.app.data.claveRegistroPropio
 import com.romtracker.app.logic.caritaDe
 import com.romtracker.app.logic.cumplidoAgua
+import com.romtracker.app.logic.iconoDe
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -100,7 +101,8 @@ fun Resumen(
         db.habitoPropioDao().todos().forEach { p ->
             val clave = claveRegistroPropio(p.id)
             // En DEJAR el ✓ guardado ya significa "ese día no lo hice".
-            lista += filaDe(if (p.tipo == TipoPropio.DEJAR) "${p.nombre} (dejar)" else p.nombre, clave, true)
+            val nombre = "${iconoDe(p)} ${p.nombre}"
+            lista += filaDe(if (p.tipo == TipoPropio.DEJAR) "$nombre (dejar)" else nombre, clave, true)
         }
         lista += Fila("Ánimo", "ANIMO") { dia -> Celda(caritaDe(animos[dia]) ?: "") }
         filas = lista

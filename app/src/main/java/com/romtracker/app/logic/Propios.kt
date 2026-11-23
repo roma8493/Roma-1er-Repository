@@ -33,3 +33,19 @@ const val ICONO_DEJAR = "🚫"
 /** Emoji del hábito: el elegido, o el de por defecto según el tipo si está vacío. */
 fun iconoDe(propio: HabitoPropio): String =
     propio.icono.trim().ifEmpty { if (propio.tipo == TipoPropio.DEJAR) ICONO_DEJAR else ICONO_HACER }
+
+/** Emojis sugeridos en el selector (el usuario también puede escribir otro). */
+val EMOJIS_SUGERIDOS: List<String> = listOf(
+    "💪", "🥗", "💧", "📚", "🚭", "😴", "🏃", "🧘", "🚶", "🚴", "🏊", "🍎",
+    "🥦", "🍵", "☕", "🍬", "🍺", "📱", "🎮", "🛌", "🧠", "✍️", "🎸", "🧹",
+    "🦷", "🙏", "🌅", "💊", "🌱", "🚫",
+)
+
+/** Deja solo el primer símbolo del texto escrito (un emoji puede ocupar varios caracteres). Vacío si no hay nada. */
+fun primerEmoji(texto: String): String {
+    val t = texto.trim()
+    if (t.isEmpty()) return ""
+    val it = java.text.BreakIterator.getCharacterInstance()
+    it.setText(t)
+    return t.substring(0, it.next())
+}
